@@ -12,3 +12,5 @@
 - ssm
 - ses
 - sns
+- tonic（ https://github.com/hyperium/tonic )
+- grpc-web

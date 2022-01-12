@@ -335,9 +335,13 @@ dependencies = [
  "futures",
  "http",
  "http-body",
+ "hyper",
+ "hyper-tls",
  "jsonwebtoken",
  "jsonwebtokens-cognito",
  "kanaria",
+ "prost",
+ "prost-types",
  "reqwest",
  "serde",
  "serde_json",
@@ -345,6 +349,7 @@ dependencies = [
  "strum_macros 0.23.1",
  "thiserror",
  "tokio",
+ "tonic",
  "tonic-build",
  "uuid",
 ]
@@ -3127,6 +3132,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "tonic"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ac42cd97ac6bd2339af5bcabf105540e21e45636ec6fa6aae5e85d44db31be0"
+dependencies = [
+ "async-stream",
+ "async-trait",
+ "base64 0.13.0",
+ "bytes",
+ "futures-core",
+ "futures-util",
+ "h2",
+ "http",
+ "http-body",
+ "hyper",
+ "percent-encoding",
+ "pin-project",
+ "prost",
+ "prost-derive",
+ "tokio",
+ "tokio-stream",
+ "tokio-util",
+ "tower",
+ "tower-service",
+ "tracing",
+ "tracing-futures",
+]
+
+[[package]]
 name = "tonic-build"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3146,9 +3180,14 @@ checksum = "c00e500fff5fa1131c866b246041a6bf96da9c965f8fe4128cb1421f23e93c00"
 dependencies = [
  "futures-core",
  "futures-util",
+ "indexmap",
  "pin-project",
  "pin-project-lite",
+ "rand 0.8.4",
+ "slab",
  "tokio",
+ "tokio-stream",
+ "tokio-util",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -3207,6 +3246,16 @@ checksum = "b4d7c0b83d4a500748fa5879461652b361edf5c9d51ede2a2ac03875ca185e24"
 dependencies = [
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "tracing-futures"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97d095ae15e245a057c8e8451bab9b3ee1e1f68e9ba2b4fbc18d0ac5237835f2"
+dependencies = [
+ "pin-project",
+ "tracing",
 ]
 
 [[package]]

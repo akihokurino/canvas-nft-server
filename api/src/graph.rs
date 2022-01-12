@@ -8,6 +8,7 @@ use crate::graph::mutation::MutationRoot;
 use crate::graph::query::QueryRoot;
 use app::application;
 use app::dataloader;
+use app::internal_api;
 use app::AppError;
 use convert_case::{Case, Casing};
 use juniper::{EmptySubscription, FieldError, RootNode};
@@ -45,6 +46,7 @@ pub struct Context {
     pub admin_work_app: application::admin::work::Application,
     pub service_work_app: application::service::work::Application,
     pub thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader,
+    pub internal_api: internal_api::Client,
 }
 
 impl juniper::Context for Context {}
@@ -55,18 +57,23 @@ impl Context {
             auth_user.user_id().clone().unwrap_or_default(),
         )
         .await;
+
         let service_work_app = application::service::work::Application::new(
             auth_user.user_id().clone().unwrap_or_default(),
         )
         .await;
+
         let thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader =
             dataloader::thumbnail_by_work::Batcher::new_loader();
+
+        let internal_api = internal_api::Client::new();
 
         Self {
             auth_user,
             admin_work_app,
             service_work_app,
             thumbnail_by_work_loader,
+            internal_api,
         }
     }
 }

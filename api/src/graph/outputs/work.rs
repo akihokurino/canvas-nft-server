@@ -1,5 +1,6 @@
 use crate::graph::enums::WorkStatus;
 use crate::graph::Context;
+use crate::FieldErrorWithCode;
 use app::domain;
 use juniper::FieldResult;
 
@@ -16,6 +17,15 @@ impl Work {
 
     fn video_path(&self) -> String {
         self.data.video_path.to_owned()
+    }
+
+    async fn signed_video_url(&self, context: &Context) -> FieldResult<String> {
+        let urls = context
+            .internal_api
+            .get_signed_urls(vec![self.data.video_path.clone()])
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+        Ok(urls.first().unwrap().to_owned())
     }
 
     fn status(&self) -> WorkStatus {
@@ -91,6 +101,15 @@ impl Thumbnail {
 
     fn image_path(&self) -> String {
         self.data.image_path.to_owned()
+    }
+
+    async fn signed_image_url(&self, context: &Context) -> FieldResult<String> {
+        let urls = context
+            .internal_api
+            .get_signed_urls(vec![self.data.image_path.clone()])
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+        Ok(urls.first().unwrap().to_owned())
     }
 
     fn order(&self) -> i32 {

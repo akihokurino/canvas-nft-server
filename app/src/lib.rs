@@ -4,6 +4,7 @@ mod csv_loader;
 pub mod dataloader;
 mod ddb;
 pub mod domain;
+pub mod internal_api;
 
 use aws_sdk_cognitoidentityprovider::error::AdminGetUserError;
 use aws_sdk_dynamodb::error::{
