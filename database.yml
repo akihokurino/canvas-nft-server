@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: DynamoDB
+
+Resources:
+  DDBWorkTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: canvas-store-work
+      AttributeDefinitions:
+        - AttributeName: ID
+          AttributeType: S
+        - AttributeName: Status
+          AttributeType: S
+        - AttributeName: Price
+          AttributeType: N
+      KeySchema:
+        - AttributeName: ID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
+      GlobalSecondaryIndexes:
+        - IndexName: ID-Price-Index
+          KeySchema:
+            - AttributeName: ID
+              KeyType: HASH
+            - AttributeName: Price
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 3
+            WriteCapacityUnits: 3
+        - IndexName: Status-Price-Index
+          KeySchema:
+            - AttributeName: Status
+              KeyType: HASH
+            - AttributeName: Price
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 3
+            WriteCapacityUnits: 3
+  DDBThumbnailTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: canvas-store-thumbnail
+      AttributeDefinitions:
+        - AttributeName: ID
+          AttributeType: S
+        - AttributeName: WorkID
+          AttributeType: S
+        - AttributeName: Order
+          AttributeType: N
+      KeySchema:
+        - AttributeName: ID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10
+      GlobalSecondaryIndexes:
+        - IndexName: ID-Order-Index
+          KeySchema:
+            - AttributeName: ID
+              KeyType: HASH
+            - AttributeName: Order
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 10
+            WriteCapacityUnits: 10
+        - IndexName: WorkID-Order-Index
+          KeySchema:
+            - AttributeName: WorkID
+              KeyType: HASH
+            - AttributeName: Order
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 10
+            WriteCapacityUnits: 10

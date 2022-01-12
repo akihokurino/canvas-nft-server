@@ -1,0 +1,14 @@
+## Specs
+- rust 1.53.0
+- actix-web 4（ https://actix.rs/ ）
+- juniper（ https://github.com/graphql-rust/juniper ）
+- lambda-web（ https://github.com/hanabu/lambda-web ）
+- dynamodb
+- lambda
+- api gateway
+- route53
+- certificate manager
+- cognite
+- ssm
+- ses
+- sns

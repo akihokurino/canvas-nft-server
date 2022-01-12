@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-app
+Globals:
+  Function:
+    Timeout: 5
+
+Parameters:
+  SsmParameter:
+    Type: String
+    Default: /canvas-store/server/dotenv
+    Description: ssm parameter path
+  DomainName:
+    Type: String
+    Default: sample.akiho.app
+    Description: api service domain name
+  HostedZoneName:
+    Type: String
+    Default: akiho.app.
+    Description: hosted zone name for service domain
+  CertificateArn:
+    Type: String
+    Default: arn:aws:acm:ap-northeast-1:326914400610:certificate/703134f6-9e3b-40ba-aeb2-b9278b60ac6f
+    Description: certificate arn for service domain
+
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./target_lambda/api.zip
+      Handler: bootstrap.is.real.handler
+      Runtime: provided.al2
+      MemorySize: 128
+      Tracing: Active
+      Events:
+        ProxyApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /
+            Method: ANY
+        ProxyApiGreedy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /{proxy+}
+            Method: ANY
+      Environment:
+        Variables:
+          SSM_PARAMETER: !Ref SsmParameter
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonCognitoPowerUser
+        - AmazonSSMReadOnlyAccess
+        - AmazonSNSFullAccess
+        - AmazonSESFullAccess
+        - AmazonS3FullAccess
+
+  SubscriberFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./target_lambda/subscriber.zip
+      Handler: bootstrap.is.real.handler
+      Runtime: provided.al2
+      MemorySize: 128
+      Tracing: Active
+      Timeout: 900
+      Events:
+        Topic:
+          Type: SNS
+          Properties:
+            Topic: arn:aws:sns:ap-northeast-1:326914400610:canvas-store-topic
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
+      Environment:
+        Variables:
+          SSM_PARAMETER: !Ref SsmParameter
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonCognitoPowerUser
+        - AmazonSSMReadOnlyAccess
+        - AmazonSNSFullAccess
+        - AmazonSESFullAccess
+        - AmazonS3FullAccess
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: default
+      BinaryMediaTypes:
+        - "*/*"
+#      Domain:
+#        EndpointConfiguration: REGIONAL
+#        DomainName: !Ref DomainName
+#        Route53:
+#          HostedZoneName: !Ref HostedZoneName
+#        CertificateArn: !Ref CertificateArn

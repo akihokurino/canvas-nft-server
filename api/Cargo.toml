@@ -1,0 +1,21 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2018"
+
+[[bin]]
+name = "api"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+app = {path = "../app" }
+actix-web = "4.0.0-beta.10"
+juniper = "0.15.7"
+juniper_actix = "0.4.0"
+convert_case = "0.4.0"
+strum_macros = "0.21.1"
+lambda-web = { version = "0.1.7", features=["actix4"] }
+tokio = { version = "1", features = ["full"] }
+
