@@ -2,9 +2,8 @@ use crate::ddb::Dao;
 use crate::domain::*;
 use crate::{AppError, AppResult};
 use aws_sdk_dynamodb::model::AttributeValue;
-use aws_sdk_dynamodb::model::*;
 use aws_sdk_dynamodb::Client;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 const TABLE_NAME: &str = "canvas-store-nft";
 const KEY_WORK_ID: &str = "WorkID";
@@ -98,37 +97,6 @@ impl nft::NFT {
 }
 
 impl Dao<nft::NFT> {
-    pub async fn get_multi(&self, work_ids: Vec<String>) -> AppResult<Vec<nft::NFT>> {
-        if work_ids.is_empty() {
-            return Ok(vec![]);
-        }
-        let ids: HashSet<String> = work_ids.into_iter().collect();
-        let mut builder = keys_and_attributes::Builder::default();
-        for id in ids {
-            let mut key: HashMap<String, AttributeValue> = HashMap::new();
-            key.insert(KEY_WORK_ID.to_string(), AttributeValue::S(id.to_owned()));
-            builder = builder.keys(key);
-        }
-
-        let res = self
-            .cli
-            .batch_get_item()
-            .request_items(self.table_name_provider.with(TABLE_NAME), builder.build())
-            .send()
-            .await?;
-
-        let mut entities: Vec<nft::NFT> = vec![];
-        for (table, data) in res.responses.unwrap_or_default() {
-            if table == self.table_name_provider.with(TABLE_NAME) {
-                for item in data {
-                    entities.push(nft::NFT::deserialize(item).unwrap())
-                }
-            }
-        }
-
-        Ok(entities)
-    }
-
     pub async fn get(&self, work_id: String) -> AppResult<nft::NFT> {
         let res = self
             .cli

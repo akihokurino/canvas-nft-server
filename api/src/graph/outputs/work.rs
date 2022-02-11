@@ -1,8 +1,9 @@
 use crate::graph::enums::WorkStatus;
+use crate::graph::outputs::nft::NFT;
 use crate::graph::Context;
 use crate::FieldErrorWithCode;
-use app::domain;
-use juniper::FieldResult;
+use app::{domain, AppError};
+use juniper::{FieldError, FieldResult};
 
 #[derive(Debug, Clone)]
 pub struct Work {
@@ -45,6 +46,22 @@ impl Work {
             .iter()
             .map(|v| Thumbnail::from(v.to_owned()))
             .collect())
+    }
+
+    async fn nft(&self, context: &Context) -> FieldResult<Option<NFT>> {
+        let nft = context
+            .nft_by_work_loader
+            .load(self.data.id.to_owned())
+            .await;
+
+        if let Err(err) = nft {
+            return match err {
+                AppError::NotFound => Ok(None),
+                _ => Err(FieldError::from(FieldErrorWithCode::from(err))),
+            };
+        }
+
+        Ok(Some(NFT::from(nft.ok().unwrap().to_owned())))
     }
 }
 

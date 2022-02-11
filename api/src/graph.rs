@@ -47,6 +47,7 @@ pub struct Context {
     pub admin_nft_app: application::admin::nft::Application,
     pub service_work_app: application::service::work::Application,
     pub thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader,
+    pub nft_by_work_loader: dataloader::nft_by_work::Loader,
     pub internal_api: internal_api::Client,
 }
 
@@ -69,6 +70,8 @@ impl Context {
 
         let thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader =
             dataloader::thumbnail_by_work::Batcher::new_loader();
+        let nft_by_work_loader: dataloader::nft_by_work::Loader =
+            dataloader::nft_by_work::Batcher::new_loader();
 
         let internal_api = internal_api::Client::new();
 
@@ -78,6 +81,7 @@ impl Context {
             admin_nft_app,
             service_work_app,
             thumbnail_by_work_loader,
+            nft_by_work_loader,
             internal_api,
         }
     }

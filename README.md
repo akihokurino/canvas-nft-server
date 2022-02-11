@@ -1,8 +1,9 @@
 ## Specs
-- rust 1.53.0
+- rust 1.58.0
 - actix-web 4（ https://actix.rs/ ）
 - juniper（ https://github.com/graphql-rust/juniper ）
 - lambda-web（ https://github.com/hanabu/lambda-web ）
+- aws-sdk-rust ( https://github.com/awslabs/aws-sdk-rust )
 - dynamodb
 - lambda
 - api gateway
@@ -12,6 +13,6 @@
 - ssm
 - ses
 - sns
-- tonic（ https://github.com/hyperium/tonic )
 - grpc-web
+- tonic（ https://github.com/hyperium/tonic )
 - opensea ( https://opensea.io/ )
