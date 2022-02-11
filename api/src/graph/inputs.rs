@@ -17,7 +17,8 @@ pub struct UpdateWorkStatusInput {
 }
 
 #[derive(Debug, GraphQLInputObject)]
-pub struct UpdateWorkPriceInput {
-    pub id: String,
-    pub price: i32,
+pub struct BindNftToWorkInput {
+    pub work_id: String,
+    pub contract_address: String,
+    pub token_id: String,
 }

@@ -5,6 +5,7 @@ pub mod dataloader;
 mod ddb;
 pub mod domain;
 pub mod internal_api;
+mod open_sea;
 
 use aws_sdk_cognitoidentityprovider::error::AdminGetUserError;
 use aws_sdk_dynamodb::error::{

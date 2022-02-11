@@ -1,5 +1,5 @@
 use crate::graph::inputs::{
-    CreateThumbnailInput, CreateWorkInput, UpdateWorkPriceInput, UpdateWorkStatusInput,
+    BindNftToWorkInput, CreateThumbnailInput, CreateWorkInput, UpdateWorkStatusInput,
 };
 use crate::graph::outputs::PreSignUploadUrl;
 use crate::graph::Context;
@@ -101,18 +101,15 @@ impl MutationRoot {
         Ok(true)
     }
 
-    async fn update_work_price(
-        context: &Context,
-        input: UpdateWorkPriceInput,
-    ) -> FieldResult<bool> {
+    async fn bind_nft_to_work(context: &Context, input: BindNftToWorkInput) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
         if !auth_user.is_admin() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         context
-            .admin_work_app
-            .update_price(input.id, input.price)
+            .admin_nft_app
+            .bind_work(input.work_id, input.contract_address, input.token_id)
             .await
             .map_err(FieldErrorWithCode::from)?;
 

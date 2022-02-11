@@ -91,15 +91,6 @@ impl Application {
         Ok(())
     }
 
-    pub async fn update_price(&self, id: String, price: i32) -> AppResult<()> {
-        let mut work = self.work_dao.get(id.clone()).await?;
-        work.update_price(price)?;
-
-        self.work_dao.put(&work).await?;
-
-        Ok(())
-    }
-
     pub async fn delete(&self, id: String) -> AppResult<()> {
         self.work_dao.delete(id.clone()).await?;
         let thumbnails = self.thumbnail_dao.get_by_work(id).await?;

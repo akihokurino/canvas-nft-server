@@ -82,3 +82,16 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: 10
             WriteCapacityUnits: 10
+  DDBNftTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: canvas-store-nft
+      AttributeDefinitions:
+        - AttributeName: WorkID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: WorkID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3

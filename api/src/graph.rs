@@ -44,6 +44,7 @@ impl AuthUser {
 pub struct Context {
     pub auth_user: AuthUser,
     pub admin_work_app: application::admin::work::Application,
+    pub admin_nft_app: application::admin::nft::Application,
     pub service_work_app: application::service::work::Application,
     pub thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader,
     pub internal_api: internal_api::Client,
@@ -57,7 +58,10 @@ impl Context {
             auth_user.user_id().clone().unwrap_or_default(),
         )
         .await;
-
+        let admin_nft_app = application::admin::nft::Application::new(
+            auth_user.user_id().clone().unwrap_or_default(),
+        )
+        .await;
         let service_work_app = application::service::work::Application::new(
             auth_user.user_id().clone().unwrap_or_default(),
         )
@@ -71,6 +75,7 @@ impl Context {
         Self {
             auth_user,
             admin_work_app,
+            admin_nft_app,
             service_work_app,
             thumbnail_by_work_loader,
             internal_api,

@@ -12,6 +12,12 @@ build:
 	cd api && cargo build
 	cd subscriber && cargo build
 
+build-api:
+	cd api && cargo build
+
+build-subscriber:
+	cd subscriber && cargo build
+
 deploy:
 	docker build -t lambda_builder .
 	docker run -it --rm -v ~/.cargo/registry:/root/.cargo/registry:z -v $(PWD):/build:z lambda_builder
