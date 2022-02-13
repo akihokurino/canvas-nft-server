@@ -16,3 +16,4 @@
 - grpc-web
 - tonic（ https://github.com/hyperium/tonic )
 - opensea ( https://opensea.io/ )
+- rust-web3 ( https://github.com/tomusdrw/rust-web3 )

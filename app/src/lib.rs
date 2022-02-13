@@ -4,6 +4,7 @@ mod csv_loader;
 pub mod dataloader;
 mod ddb;
 pub mod domain;
+mod ethereum;
 pub mod internal_api;
 mod open_sea;
 
