@@ -1,9 +1,11 @@
+use crate::domain::user::AuthUser;
 use crate::{AppError, AppResult};
 use aws_sdk_cognitoidentityprovider::Client;
 use jsonwebtokens_cognito::KeySet;
+use serde_json::Value;
 use std::env;
 
-pub async fn verify_token(token: &str) -> AppResult<String> {
+pub async fn verify_token(token: &str) -> AppResult<AuthUser> {
     let pool_id = env::var("COGNITE_USER_POOL_ID").expect("need set cognite pool id");
     let client_id = env::var("COGNITE_CLIENT_ID").expect("need set cognite client id");
 
@@ -19,7 +21,24 @@ pub async fn verify_token(token: &str) -> AppResult<String> {
         .await
         .map_err(|_err| AppError::UnAuthenticate)?;
 
-    Ok(result.get("sub").map_or("".to_string(), |v| v.to_string()))
+    let sub = result.get("sub").map_or("".to_string(), |v| match v {
+        Value::String(val) => val.to_string(),
+        _ => "".to_string(),
+    });
+    let raw_account_type = result
+        .get("custom:account_type")
+        .map_or("".to_string(), |v| match v {
+            Value::String(val) => val.to_string(),
+            _ => "".to_string(),
+        });
+
+    Ok(if raw_account_type.to_string() == "0".to_string() {
+        AuthUser::Admin(sub)
+    } else if raw_account_type.to_string() == "1".to_string() {
+        AuthUser::Service(sub)
+    } else {
+        AuthUser::None
+    })
 }
 
 pub async fn get_email(id: String) -> AppResult<String> {

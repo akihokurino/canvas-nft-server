@@ -1,6 +1,7 @@
 pub mod api;
 
 use std::env;
+use web3::types::Address;
 use web3::*;
 
 #[derive(Clone, Debug)]
@@ -17,5 +18,12 @@ impl Client {
         let cli = Web3::new(transport);
 
         Client { cli }
+    }
+
+    pub fn parse_address(&self, address: String) -> Option<Address> {
+        match address.trim_start_matches("0x").parse() {
+            Ok(value) => Some(value),
+            Err(_e) => None,
+        }
     }
 }

@@ -22,3 +22,8 @@ pub struct BindNftToWorkInput {
     pub contract_address: String,
     pub token_id: String,
 }
+
+#[derive(Debug, GraphQLInputObject)]
+pub struct RegisterUserInput {
+    pub address: String,
+}

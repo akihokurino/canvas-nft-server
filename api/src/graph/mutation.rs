@@ -1,6 +1,8 @@
 use crate::graph::inputs::{
-    BindNftToWorkInput, CreateThumbnailInput, CreateWorkInput, UpdateWorkStatusInput,
+    BindNftToWorkInput, CreateThumbnailInput, CreateWorkInput, RegisterUserInput,
+    UpdateWorkStatusInput,
 };
+use crate::graph::outputs::user::User;
 use crate::graph::outputs::PreSignUploadUrl;
 use crate::graph::Context;
 use crate::graph::FieldErrorWithCode;
@@ -11,6 +13,21 @@ pub struct MutationRoot;
 
 #[juniper::graphql_object(Context = Context)]
 impl MutationRoot {
+    async fn register_user(context: &Context, input: RegisterUserInput) -> FieldResult<User> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_service() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        let user = context
+            .service_user_app
+            .register(input.address)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(User::from(user))
+    }
+
     async fn create_work(context: &Context, input: CreateWorkInput) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
         if !auth_user.is_admin() {

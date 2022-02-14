@@ -1,4 +1,5 @@
 pub mod nft;
+pub mod user;
 pub mod work;
 
 #[derive(Debug, GraphQLObject)]

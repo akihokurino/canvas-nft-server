@@ -2,6 +2,19 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: DynamoDB
 
 Resources:
+  DDBUserTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: canvas-store-user
+      AttributeDefinitions:
+        - AttributeName: ID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
   DDBWorkTable:
     Type: AWS::DynamoDB::Table
     Properties:

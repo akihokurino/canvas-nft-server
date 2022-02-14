@@ -7,7 +7,8 @@ use std::marker::PhantomData;
 
 mod nft;
 mod thumbnail;
-pub mod work;
+mod user;
+mod work;
 
 pub struct Dao<T> {
     cli: Client,

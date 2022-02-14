@@ -6,6 +6,7 @@ extern crate juniper;
 use crate::graph::*;
 use actix_web::http::HeaderMap;
 use actix_web::web::Data;
+use app::domain::user::AuthUser;
 use juniper_actix::{graphql_handler, playground_handler};
 use lambda_web::actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
 use lambda_web::{is_running_on_lambda, run_actix_on_lambda, LambdaError};
@@ -73,25 +74,17 @@ async fn authenticate(req: &HttpRequest) -> AuthUser {
         return AuthUser::Service(id);
     }
 
-    let token: &str = get(req.headers(), "admin-authorization").unwrap_or_default();
-    if token.len() >= 7 {
-        let result = app::aws::cognite::verify_token(&token[7..]).await;
-        if let Err(_e) = result {
-            return AuthUser::None;
-        }
-        return AuthUser::Admin(result.ok().unwrap());
+    let token: &str = get(req.headers(), "authorization").unwrap_or_default();
+    if token.len() < 7 {
+        return AuthUser::None;
     }
 
-    let token: &str = get(req.headers(), "service-authorization").unwrap_or_default();
-    if token.len() >= 7 {
-        let result = app::aws::cognite::verify_token(&token[7..]).await;
-        if let Err(_e) = result {
-            return AuthUser::None;
-        }
-        return AuthUser::Service(result.ok().unwrap());
+    let result = app::aws::cognite::verify_token(&token[7..]).await;
+    if let Err(_e) = result {
+        return AuthUser::None;
     }
 
-    AuthUser::None
+    result.ok().unwrap()
 }
 
 fn get_into<T>(headers: &HeaderMap, key: &str) -> Option<T>

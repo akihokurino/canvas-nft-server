@@ -1,14 +1,31 @@
 use crate::graph::enums::WorkStatus;
+use crate::graph::outputs::user::User;
 use crate::graph::outputs::work::{Work, WorkConnection, WorkEdge};
 use crate::graph::Context;
 use crate::graph::FieldErrorWithCode;
 use crate::AuthUser;
+use app::AppError;
 use juniper::FieldResult;
 
 pub struct QueryRoot;
 
 #[juniper::graphql_object(Context = Context)]
 impl QueryRoot {
+    async fn get_me(context: &Context) -> FieldResult<User> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_service() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        let user = context
+            .service_user_app
+            .get_me()
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(User::from(user))
+    }
+
     async fn all_works(
         context: &Context,
         status: Option<WorkStatus>,

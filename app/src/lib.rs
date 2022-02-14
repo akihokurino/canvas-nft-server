@@ -202,3 +202,10 @@ impl From<jsonwebtoken::errors::Error> for AppError {
         Self::Internal(msg)
     }
 }
+
+impl From<web3::Error> for AppError {
+    fn from(e: web3::Error) -> Self {
+        let msg = format!("web3 error: {:?}", e);
+        Self::Internal(msg)
+    }
+}

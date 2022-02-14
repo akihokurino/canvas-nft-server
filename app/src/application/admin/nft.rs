@@ -6,7 +6,7 @@ pub struct Application {
     me_id: String,
     work_dao: ddb::Dao<Work>,
     nft_dao: ddb::Dao<NFT>,
-    open_sea_client: open_sea::Client,
+    open_sea_cli: open_sea::Client,
 }
 
 impl Application {
@@ -19,7 +19,7 @@ impl Application {
             me_id,
             work_dao,
             nft_dao,
-            open_sea_client,
+            open_sea_cli: open_sea_client,
         }
     }
 
@@ -32,7 +32,7 @@ impl Application {
         let mut work = self.work_dao.get(id.clone()).await?;
 
         let asset = self
-            .open_sea_client
+            .open_sea_cli
             .get_asset(open_sea::api::get_asset::Input {
                 address: contract_address.clone(),
                 token_id: token_id.clone(),
