@@ -1,3 +1,5 @@
+use crate::ethereum;
+
 #[derive(Clone, PartialEq)]
 pub enum AuthUser {
     // 管理ユーザー
@@ -43,11 +45,17 @@ impl User {
         Self { id, address }
     }
 
-    pub fn with_balance(&self, balance: i32) -> UserWithBalance {
+    pub fn with_balance(&self, balance: u128) -> UserWithBalance {
+        let amt_unit = "wei";
+        let to_unit = "ether";
+        let map = ethereum::unit::convert(format!("{}", balance).as_str(), &amt_unit);
+        let val = map.get(to_unit).unwrap();
+        println!("{}", val);
+
         UserWithBalance {
             id: self.id.to_owned(),
             address: self.address.to_owned(),
-            balance,
+            balance: val.parse().unwrap_or(0.0),
         }
     }
 }
@@ -56,5 +64,5 @@ impl User {
 pub struct UserWithBalance {
     pub id: String,
     pub address: String,
-    pub balance: i32,
+    pub balance: f64,
 }

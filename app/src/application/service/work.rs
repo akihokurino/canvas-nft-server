@@ -4,6 +4,7 @@ use crate::{ddb, AppError, AppResult};
 use std::collections::HashMap;
 
 pub struct Application {
+    #[allow(dead_code)]
     me_id: String,
     work_dao: Dao<Work>,
 }

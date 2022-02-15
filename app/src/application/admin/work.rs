@@ -7,6 +7,7 @@ use http::Uri;
 use std::env;
 
 pub struct Application {
+    #[allow(dead_code)]
     me_id: String,
     work_dao: ddb::Dao<Work>,
     thumbnail_dao: ddb::Dao<Thumbnail>,

@@ -16,7 +16,7 @@ impl User {
         self.data.address.to_owned()
     }
 
-    fn balance(&self) -> i32 {
+    fn balance(&self) -> f64 {
         self.data.balance.to_owned()
     }
 }

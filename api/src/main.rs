@@ -4,7 +4,7 @@ mod graph;
 extern crate juniper;
 
 use crate::graph::*;
-use actix_web::http::HeaderMap;
+use actix_web::http::header::HeaderMap;
 use actix_web::web::Data;
 use app::domain::user::AuthUser;
 use juniper_actix::{graphql_handler, playground_handler};

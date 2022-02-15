@@ -3,6 +3,7 @@ use crate::domain::user::{User, UserWithBalance};
 use crate::{ethereum, AppError, AppResult};
 
 pub struct Application {
+    #[allow(dead_code)]
     me_id: String,
     user_dao: Dao<User>,
     ethereum_cli: ethereum::Client,

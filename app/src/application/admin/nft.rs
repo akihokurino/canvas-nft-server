@@ -3,6 +3,7 @@ use crate::domain::work::Work;
 use crate::{ddb, open_sea, AppResult};
 
 pub struct Application {
+    #[allow(dead_code)]
     me_id: String,
     work_dao: ddb::Dao<Work>,
     nft_dao: ddb::Dao<NFT>,
