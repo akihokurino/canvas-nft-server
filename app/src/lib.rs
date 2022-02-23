@@ -22,6 +22,7 @@ use thiserror::Error as ThisErr;
 
 pub const WORK_CSV_PATH_PREFIX: &str = "work_csv";
 pub const THUMBNAIL_CSV_PATH_PREFIX: &str = "thumbnail_csv";
+pub const NFT_ASSET_PATH_PREFIX: &str = "nft_asset";
 
 #[derive(ThisErr, Debug, PartialOrd, PartialEq, Clone)]
 pub enum AppError {

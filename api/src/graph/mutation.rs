@@ -1,5 +1,5 @@
 use crate::graph::inputs::{
-    BindNftToWorkInput, CreateThumbnailInput, CreateWorkInput, RegisterUserInput,
+    BindNftToWorkInput, CreateNftInput, CreateThumbnailInput, CreateWorkInput, RegisterUserInput,
     UpdateWorkStatusInput,
 };
 use crate::graph::outputs::user::User;
@@ -112,6 +112,21 @@ impl MutationRoot {
         context
             .admin_work_app
             .update_status(input.id, input.status.domain())
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn create_nft(context: &Context, input: CreateNftInput) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .admin_nft_app
+            .create_nft(input.work_id, input.thumbnail_url, input.point, input.level)
             .await
             .map_err(FieldErrorWithCode::from)?;
 

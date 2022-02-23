@@ -1,6 +1,10 @@
+use crate::aws::s3::upload_object;
 use crate::domain::nft::NFT;
 use crate::domain::work::Work;
-use crate::{ddb, open_sea, AppResult};
+use crate::open_sea::metadata::Metadata;
+use crate::{ddb, internal_api, open_sea, AppResult, NFT_ASSET_PATH_PREFIX};
+use bytes::Bytes;
+use std::env;
 
 pub struct Application {
     #[allow(dead_code)]
@@ -8,20 +12,75 @@ pub struct Application {
     work_dao: ddb::Dao<Work>,
     nft_dao: ddb::Dao<NFT>,
     open_sea_cli: open_sea::Client,
+    internal_api: internal_api::Client,
 }
 
 impl Application {
     pub async fn new(me_id: String) -> Self {
         let work_dao: ddb::Dao<Work> = ddb::Dao::new().await;
         let nft_dao: ddb::Dao<NFT> = ddb::Dao::new().await;
-        let open_sea_client = open_sea::Client::new();
+        let open_sea_cli = open_sea::Client::new();
+        let internal_api = internal_api::Client::new();
 
         Self {
             me_id,
             work_dao,
             nft_dao,
-            open_sea_cli: open_sea_client,
+            open_sea_cli,
+            internal_api,
         }
+    }
+
+    pub async fn create_nft(
+        &self,
+        id: String,
+        thumbnail_url: String,
+        point: i32,
+        level: i32,
+    ) -> AppResult<()> {
+        let work = self.work_dao.get(id.clone()).await?;
+
+        let urls = self
+            .internal_api
+            .get_signed_urls(vec![thumbnail_url.clone()])
+            .await?;
+        let url = urls.first().unwrap();
+        let bytes = reqwest::get(url).await?.bytes().await?;
+
+        let s3_key = format!("{}/{}.png", NFT_ASSET_PATH_PREFIX, work.id.clone());
+        let uploaded_url = upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key,
+            bytes,
+            "image/png".to_string(),
+        )
+        .await?;
+
+        let metadata = Metadata::new(
+            work.id.clone(),
+            "create test nft from rust".to_string(),
+            uploaded_url,
+            point,
+            level,
+        );
+        let metadata = serde_json::to_string(&metadata)?;
+
+        let s3_key = format!(
+            "{}/{}.metadata.json",
+            NFT_ASSET_PATH_PREFIX,
+            work.id.clone()
+        );
+        let uploaded_url = upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key,
+            Bytes::from(metadata),
+            "application/json".to_string(),
+        )
+        .await?;
+
+        println!("{}", uploaded_url);
+
+        Ok(())
     }
 
     pub async fn bind_work(

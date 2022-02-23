@@ -1,9 +1,32 @@
 use crate::AppResult;
 use aws_sdk_s3::presigning::config::PresigningConfig;
-use aws_sdk_s3::Client;
+use aws_sdk_s3::{ByteStream, Client};
 use bytes::Bytes;
 use http::Uri;
 use std::time::Duration;
+
+pub async fn upload_object(
+    bucket: String,
+    key: String,
+    data: Bytes,
+    content_type: String,
+) -> AppResult<String> {
+    let shared_config = aws_config::load_from_env().await;
+    let client = Client::new(&shared_config);
+    let body = ByteStream::from(data);
+    client
+        .put_object()
+        .bucket(&bucket)
+        .key(&key)
+        .content_type(content_type)
+        .body(body)
+        .send()
+        .await?;
+    Ok(format!(
+        "https://{}.s3.ap-northeast-1.amazonaws.com/{}",
+        bucket, key
+    ))
+}
 
 pub async fn download_object(bucket: String, key: String) -> AppResult<Bytes> {
     let shared_config = aws_config::load_from_env().await;

@@ -21,7 +21,7 @@ prost = "0.7"
 prost-types = "0.7"
 bytes = "1"
 jsonwebtokens-cognito = "0.1.0-alpha"
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", features = ["json", "blocking"] }
 http = "0.2"
 http-body = "0.4.2"
 hyper = {version = "0.14", features = ["full"]}

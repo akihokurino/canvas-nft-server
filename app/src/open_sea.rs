@@ -1,4 +1,5 @@
 pub mod api;
+pub mod metadata;
 
 use crate::{AppError, AppResult};
 use reqwest::header::{HeaderMap, HeaderValue};
