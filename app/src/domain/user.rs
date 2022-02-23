@@ -50,7 +50,6 @@ impl User {
         let to_unit = "ether";
         let map = ethereum::unit::convert(format!("{}", balance).as_str(), &amt_unit);
         let val = map.get(to_unit).unwrap();
-        println!("{}", val);
 
         UserWithBalance {
             id: self.id.to_owned(),

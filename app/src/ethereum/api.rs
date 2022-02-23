@@ -5,6 +5,7 @@ use std::env;
 use std::str::FromStr;
 use web3::contract::{Contract, Options};
 use web3::signing::SecretKeyRef;
+use web3::types::U256;
 
 impl Client {
     pub async fn get_balance(&self, address: String) -> AppResult<u128> {
@@ -17,10 +18,11 @@ impl Client {
     }
 
     pub async fn get_nft_name(&self) -> AppResult<String> {
-        let address = env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
+        let contract_address =
+            env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
-            self.parse_address(address).unwrap(),
+            self.parse_address(contract_address).unwrap(),
             include_bytes!("./canvas.abi.json"),
         )?;
 
@@ -31,10 +33,11 @@ impl Client {
     }
 
     pub async fn get_nft_symbol(&self) -> AppResult<String> {
-        let address = env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
+        let contract_address =
+            env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
-            self.parse_address(address).unwrap(),
+            self.parse_address(contract_address).unwrap(),
             include_bytes!("./canvas.abi.json"),
         )?;
 
@@ -44,13 +47,35 @@ impl Client {
         Ok(symbol)
     }
 
+    pub async fn get_nft_balance(&self, address: String) -> AppResult<u128> {
+        let contract_address =
+            env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
+        let contract = Contract::from_json(
+            self.cli.eth(),
+            self.parse_address(contract_address).unwrap(),
+            include_bytes!("./canvas.abi.json"),
+        )?;
+
+        let result = contract.query(
+            "balanceOf",
+            self.parse_address(address).unwrap(),
+            None,
+            Options::default(),
+            None,
+        );
+        let balance_of: U256 = result.await?;
+
+        Ok(balance_of.as_u128())
+    }
+
     pub async fn mint_nft(&self, work_id: String) -> AppResult<()> {
-        let address = env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
+        let contract_address =
+            env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let wallet_address = env::var("MY_WALLET_ADDRESS").expect("should set wallet address");
         let wallet_secret = env::var("MY_WALLET_SECRET").expect("should set wallet secret");
         let contract = Contract::from_json(
             self.cli.eth(),
-            self.parse_address(address).unwrap(),
+            self.parse_address(contract_address).unwrap(),
             include_bytes!("./canvas.abi.json"),
         )?;
 
