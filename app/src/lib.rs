@@ -210,3 +210,17 @@ impl From<web3::Error> for AppError {
         Self::Internal(msg)
     }
 }
+
+impl From<web3::ethabi::Error> for AppError {
+    fn from(e: web3::ethabi::Error) -> Self {
+        let msg = format!("web3 error: {:?}", e);
+        Self::Internal(msg)
+    }
+}
+
+impl From<web3::contract::Error> for AppError {
+    fn from(e: web3::contract::Error) -> Self {
+        let msg = format!("web3 error: {:?}", e);
+        Self::Internal(msg)
+    }
+}

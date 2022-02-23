@@ -323,6 +323,7 @@ dependencies = [
  "prost-types",
  "regex",
  "reqwest",
+ "secp256k1",
  "serde",
  "serde_json",
  "strum",

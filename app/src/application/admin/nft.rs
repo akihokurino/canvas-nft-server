@@ -2,7 +2,7 @@ use crate::aws::s3::upload_object;
 use crate::domain::nft::NFT;
 use crate::domain::work::Work;
 use crate::open_sea::metadata::Metadata;
-use crate::{ddb, internal_api, open_sea, AppResult, NFT_ASSET_PATH_PREFIX};
+use crate::{ddb, ethereum, internal_api, open_sea, AppResult, NFT_ASSET_PATH_PREFIX};
 use bytes::Bytes;
 use std::env;
 
@@ -13,6 +13,7 @@ pub struct Application {
     nft_dao: ddb::Dao<NFT>,
     open_sea_cli: open_sea::Client,
     internal_api: internal_api::Client,
+    ethereum_cli: ethereum::Client,
 }
 
 impl Application {
@@ -21,6 +22,7 @@ impl Application {
         let nft_dao: ddb::Dao<NFT> = ddb::Dao::new().await;
         let open_sea_cli = open_sea::Client::new();
         let internal_api = internal_api::Client::new();
+        let ethereum_cli = ethereum::Client::new();
 
         Self {
             me_id,
@@ -28,6 +30,7 @@ impl Application {
             nft_dao,
             open_sea_cli,
             internal_api,
+            ethereum_cli,
         }
     }
 
@@ -70,7 +73,7 @@ impl Application {
             NFT_ASSET_PATH_PREFIX,
             work.id.clone()
         );
-        let uploaded_url = upload_object(
+        upload_object(
             env::var("S3_USER_BUCKET").unwrap(),
             s3_key,
             Bytes::from(metadata),
@@ -78,7 +81,11 @@ impl Application {
         )
         .await?;
 
-        println!("{}", uploaded_url);
+        let name = self.ethereum_cli.get_nft_name().await?;
+        let symbol = self.ethereum_cli.get_nft_symbol().await?;
+        println!("{}, {}", name, symbol);
+
+        self.ethereum_cli.mint_nft(work.id).await?;
 
         Ok(())
     }
