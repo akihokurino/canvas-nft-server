@@ -28,14 +28,11 @@ impl Application {
             .ethereum_cli
             .get_nft_balance(user.address.clone())
             .await?;
-        println!("nft balance = {}", nft_balance);
 
-        Ok(user.with_balance(balance))
+        Ok(user.with_balance(balance, nft_balance))
     }
 
     pub async fn register(&self, address: String) -> AppResult<UserWithBalance> {
-        println!("id: {:?}", self.me_id.clone());
-        println!("address: {:?}", address.clone());
         let user = self.user_dao.get(self.me_id.clone()).await;
         if let Ok(_user) = user {
             return Err(AppError::BadRequest(
@@ -52,7 +49,11 @@ impl Application {
         self.user_dao.put(&user).await?;
 
         let balance = self.ethereum_cli.get_balance(user.address.clone()).await?;
+        let nft_balance = self
+            .ethereum_cli
+            .get_nft_balance(user.address.clone())
+            .await?;
 
-        Ok(user.with_balance(balance))
+        Ok(user.with_balance(balance, nft_balance))
     }
 }

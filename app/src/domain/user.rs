@@ -45,7 +45,7 @@ impl User {
         Self { id, address }
     }
 
-    pub fn with_balance(&self, balance: u128) -> UserWithBalance {
+    pub fn with_balance(&self, balance: u128, nft_num: u128) -> UserWithBalance {
         let amt_unit = "wei";
         let to_unit = "ether";
         let map = ethereum::unit::convert(format!("{}", balance).as_str(), &amt_unit);
@@ -55,6 +55,7 @@ impl User {
             id: self.id.to_owned(),
             address: self.address.to_owned(),
             balance: val.parse().unwrap_or(0.0),
+            nft_num,
         }
     }
 }
@@ -64,4 +65,5 @@ pub struct UserWithBalance {
     pub id: String,
     pub address: String,
     pub balance: f64,
+    pub nft_num: u128
 }

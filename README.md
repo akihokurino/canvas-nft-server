@@ -17,3 +17,14 @@
 - tonic（ https://github.com/hyperium/tonic )
 - opensea ( https://opensea.io/ )
 - rust-web3 ( https://github.com/tomusdrw/rust-web3 )
+
+## Done
+- upload csv and register work in sns
+- register work as nft to opensea（use my erc721 token）
+- get nft info from opensea
+- get erc721 token info from ethereum
+- get my balance of ether
+
+
+## SmartContract
+https://github.com/akihokurino/ethereum-erc721-nft
