@@ -80,16 +80,27 @@ impl Client {
         )?;
 
         let prev_key = SecretKey::from_str(&wallet_secret).unwrap();
+        let gas_limit: i64 = 5500000;
+        let gas_price: i64 = 35000000000;
 
-        contract
+        let result = contract
             .signed_call_with_confirmations(
                 "mint",
                 (self.parse_address(wallet_address).unwrap(), work_id),
-                Options::default(),
+                Options::with(
+                    |opt| {
+                        opt.gas = Some(U256::from(gas_limit));
+                        opt.gas_price = Some(U256::from(gas_price));
+                    }
+                ),
                 1,
                 SecretKeyRef::from(&prev_key),
             )
             .await?;
+
+        println!("tx id: {:?}", result.transaction_type);
+        println!("gas used: {:?}", result.gas_used);
+        println!("status: {:?}", result.status);
 
         Ok(())
     }
