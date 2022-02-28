@@ -1,5 +1,5 @@
 use crate::ethereum::Client;
-use crate::{AppError, AppResult};
+use crate::AppResult;
 use secp256k1::SecretKey;
 use std::env;
 use std::str::FromStr;
