@@ -15,4 +15,6 @@ CMD \
   mv target_lambda/release/api target_lambda/release/bootstrap && \
   zip -9 -j target_lambda/api.zip target_lambda/release/bootstrap && \
   mv target_lambda/release/subscriber target_lambda/release/bootstrap && \
-  zip -9 -j target_lambda/subscriber.zip target_lambda/release/bootstrap
+  zip -9 -j target_lambda/subscriber.zip target_lambda/release/bootstrap && \
+  mv target_lambda/release/batch target_lambda/release/bootstrap && \
+  zip -9 -j target_lambda/batch.zip target_lambda/release/bootstrap

@@ -1,5 +1,6 @@
 use crate::graph::Context;
 use app::domain;
+use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct User {

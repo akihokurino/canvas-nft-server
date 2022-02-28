@@ -3,4 +3,5 @@ members = [
     "app",
     "api",
     "subscriber",
+    "batch"
 ]

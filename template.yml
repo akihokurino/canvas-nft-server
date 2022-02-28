@@ -84,6 +84,34 @@ Resources:
         - AmazonSESFullAccess
         - AmazonS3FullAccess
 
+  BatchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./target_lambda/batch.zip
+      Handler: bootstrap.is.real.handler
+      Runtime: provided.al2
+      MemorySize: 128
+      Tracing: Active
+      Timeout: 900
+      Events:
+        SyncWork:
+          Type: Schedule
+          Properties:
+            Description: ''
+            Enabled: true
+            Input: '{"command":"sync-work"}'
+            Schedule: 'cron(0 12 * * ? *)'
+      Environment:
+        Variables:
+          SSM_PARAMETER: !Ref SsmParameter
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonCognitoPowerUser
+        - AmazonSSMReadOnlyAccess
+        - AmazonSNSFullAccess
+        - AmazonSESFullAccess
+        - AmazonS3FullAccess
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:

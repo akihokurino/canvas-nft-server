@@ -7,9 +7,7 @@ use serde_json::Value;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     ssm::load_env().await;
-
     lambda_runtime::run(handler_fn(exec)).await?;
-
     Ok(())
 }
 

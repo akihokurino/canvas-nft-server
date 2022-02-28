@@ -11,12 +11,16 @@ clean:
 build:
 	cd api && cargo build
 	cd subscriber && cargo build
+	cd batch && cargo build
 
 build-api:
 	cd api && cargo build
 
 build-subscriber:
 	cd subscriber && cargo build
+
+build-batch:
+	cd batch && cargo build
 
 deploy:
 	docker build -t lambda_builder .
@@ -49,3 +53,11 @@ debug-token:
         --auth-flow ADMIN_NO_SRP_AUTH \
         --auth-parameters USERNAME=${DEBUG_EMAIL},PASSWORD=Test1234 \
         --profile me
+
+run-sync-work:
+	aws lambda invoke \
+		--function-name canvas-store-server-BatchFunction-uxU6xWOjAZm5 \
+		--payload '{"command":"sync-work"}' \
+		--cli-binary-format raw-in-base64-out \
+		--profile me \
+		/dev/null

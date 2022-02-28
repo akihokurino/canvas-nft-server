@@ -1,8 +1,9 @@
 use crate::aws::s3;
+use crate::aws::s3::upload_object;
 use crate::csv_loader::load_from_csv;
-use crate::ddb;
 use crate::domain::work::{Thumbnail, Work, WorkStatus};
 use crate::AppResult;
+use crate::{ddb, internal_api, THUMBNAIL_CSV_PATH_PREFIX, WORK_CSV_PATH_PREFIX};
 use http::Uri;
 use std::env;
 
@@ -11,17 +12,20 @@ pub struct Application {
     me_id: String,
     work_dao: ddb::Dao<Work>,
     thumbnail_dao: ddb::Dao<Thumbnail>,
+    internal_api: internal_api::Client,
 }
 
 impl Application {
     pub async fn new(me_id: String) -> Self {
         let work_dao: ddb::Dao<Work> = ddb::Dao::new().await;
         let thumbnail_dao: ddb::Dao<Thumbnail> = ddb::Dao::new().await;
+        let internal_api = internal_api::Client::new();
 
         Self {
             me_id,
             work_dao,
             thumbnail_dao,
+            internal_api,
         }
     }
 
@@ -47,6 +51,48 @@ impl Application {
     pub async fn get(&self, id: String) -> AppResult<Work> {
         let work = self.work_dao.get(id).await?;
         Ok(work)
+    }
+
+    pub async fn sync_work_thumbnail(&self) -> AppResult<()> {
+        let urls = self
+            .internal_api
+            .get_signed_urls(vec![
+                "gs://canvas-329810-csv/work.csv".to_string(),
+                "gs://canvas-329810-csv/thumbnail.csv".to_string(),
+            ])
+            .await?;
+
+        let url = urls[0].clone();
+        let bytes = reqwest::get(url).await?.bytes().await?;
+        let s3_key = format!("{}/work.csv", WORK_CSV_PATH_PREFIX);
+        upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key,
+            bytes.clone(),
+            "text/csv".to_string(),
+        )
+        .await?;
+        let works = load_from_csv::<Work>(bytes, None)?;
+        for work in works {
+            self.work_dao.put(&work).await?;
+        }
+
+        let url = urls[1].clone();
+        let bytes = reqwest::get(url).await?.bytes().await?;
+        let s3_key = format!("{}/thumbnail.csv", THUMBNAIL_CSV_PATH_PREFIX);
+        upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key,
+            bytes.clone(),
+            "text/csv".to_string(),
+        )
+        .await?;
+        let thumbnails = load_from_csv::<Thumbnail>(bytes, None)?;
+        for thumbnail in thumbnails {
+            self.thumbnail_dao.put(&thumbnail).await?;
+        }
+
+        Ok(())
     }
 
     pub async fn import_work(&self, prefix: String, file_name: String) -> AppResult<()> {
