@@ -111,4 +111,24 @@ impl QueryRoot {
 
         Ok(Work::from(work.to_owned()))
     }
+
+    async fn owner_of_nft(context: &Context, work_id: String) -> FieldResult<String> {
+        let result = context
+            .ethereum_cli
+            .get_owner_of(work_id)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(result)
+    }
+
+    async fn is_own_nft(context: &Context, address: String, work_id: String) -> FieldResult<bool> {
+        let result = context
+            .ethereum_cli
+            .is_owned(address, work_id)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(result)
+    }
 }

@@ -1,11 +1,11 @@
 use crate::ethereum::Client;
-use crate::AppResult;
+use crate::{AppError, AppResult};
 use secp256k1::SecretKey;
 use std::env;
 use std::str::FromStr;
 use web3::contract::{Contract, Options};
 use web3::signing::SecretKeyRef;
-use web3::types::U256;
+use web3::types::{Address, U256};
 
 impl Client {
     pub async fn get_balance(&self, address: String) -> AppResult<u128> {
@@ -68,6 +68,43 @@ impl Client {
         Ok(balance_of.as_u128())
     }
 
+    pub async fn get_owner_of(&self, work_id: String) -> AppResult<String> {
+        let contract_address =
+            env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
+        let contract = Contract::from_json(
+            self.cli.eth(),
+            self.parse_address(contract_address).unwrap(),
+            include_bytes!("./canvas.abi.json"),
+        )?;
+
+        let result = contract.query("ownerAddressOf", work_id, None, Options::default(), None);
+        let address: Address = result.await?;
+
+        Ok(address.to_string())
+    }
+
+    pub async fn is_owned(&self, address: String, work_id: String) -> AppResult<bool> {
+        let contract_address =
+            env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
+        let contract = Contract::from_json(
+            self.cli.eth(),
+            self.parse_address(contract_address).unwrap(),
+            include_bytes!("./canvas.abi.json"),
+        )?;
+
+        let wallet_address = self.parse_address(address).unwrap();
+        let result = contract.query(
+            "isOwn",
+            (wallet_address, work_id),
+            None,
+            Options::default(),
+            None,
+        );
+        let is_own: bool = result.await?;
+
+        Ok(is_own)
+    }
+
     pub async fn mint_nft(&self, work_id: String) -> AppResult<()> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
@@ -87,12 +124,10 @@ impl Client {
             .signed_call_with_confirmations(
                 "mint",
                 (self.parse_address(wallet_address).unwrap(), work_id),
-                Options::with(
-                    |opt| {
-                        opt.gas = Some(U256::from(gas_limit));
-                        opt.gas_price = Some(U256::from(gas_price));
-                    }
-                ),
+                Options::with(|opt| {
+                    opt.gas = Some(U256::from(gas_limit));
+                    opt.gas_price = Some(U256::from(gas_price));
+                }),
                 1,
                 SecretKeyRef::from(&prev_key),
             )
