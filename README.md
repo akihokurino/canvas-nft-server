@@ -30,5 +30,8 @@
 ## ERC721
 https://github.com/akihokurino/ethereum-erc721-nft
 
+## ERC1155
+https://github.com/akihokurino/ethereum-erc1155-nft
+
 ## OpenSea
 https://testnets.opensea.io/Akiho-Dev1
