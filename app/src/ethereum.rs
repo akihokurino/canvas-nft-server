@@ -1,4 +1,5 @@
-pub mod api;
+mod erc1155;
+pub mod erc721;
 pub mod unit;
 
 use std::env;

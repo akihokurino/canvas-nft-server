@@ -1,6 +1,6 @@
 use crate::graph::inputs::{
-    BindNftToWorkInput, CreateNftInput, CreateThumbnailInput, CreateWorkInput, RegisterUserInput,
-    UpdateWorkStatusInput,
+    BindNftToWorkInput, CreateNft1155Input, CreateNftInput, CreateThumbnailInput, CreateWorkInput,
+    RegisterUserInput, UpdateWorkStatusInput,
 };
 use crate::graph::outputs::user::User;
 use crate::graph::outputs::PreSignUploadUrl;
@@ -126,7 +126,28 @@ impl MutationRoot {
 
         context
             .admin_nft_app
-            .create_nft(input.work_id, input.thumbnail_url, input.point, input.level)
+            .create_erc721(input.work_id, input.thumbnail_url, input.point, input.level)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn create_nft_1155(context: &Context, input: CreateNft1155Input) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .admin_nft_app
+            .create_erc1155(
+                input.work_id,
+                input.thumbnail_url,
+                input.point,
+                input.level,
+                input.amount as u32,
+            )
             .await
             .map_err(FieldErrorWithCode::from)?;
 

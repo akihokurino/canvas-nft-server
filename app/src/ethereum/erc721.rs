@@ -8,7 +8,7 @@ use web3::signing::SecretKeyRef;
 use web3::types::{Address, U256};
 
 impl Client {
-    pub async fn get_balance(&self, address: String) -> AppResult<u128> {
+    pub async fn get_erc721_balance(&self, address: String) -> AppResult<u128> {
         let balance = self
             .cli
             .eth()
@@ -17,13 +17,13 @@ impl Client {
         Ok(balance.as_u128())
     }
 
-    pub async fn get_nft_name(&self) -> AppResult<String> {
+    pub async fn get_erc721_nft_name(&self) -> AppResult<String> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
             self.parse_address(contract_address).unwrap(),
-            include_bytes!("./canvas.abi.json"),
+            include_bytes!("canvas_erc721.abi.json"),
         )?;
 
         let result = contract.query("name", (), None, Options::default(), None);
@@ -32,13 +32,13 @@ impl Client {
         Ok(name)
     }
 
-    pub async fn get_nft_symbol(&self) -> AppResult<String> {
+    pub async fn get_erc721_nft_symbol(&self) -> AppResult<String> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
             self.parse_address(contract_address).unwrap(),
-            include_bytes!("./canvas.abi.json"),
+            include_bytes!("canvas_erc721.abi.json"),
         )?;
 
         let result = contract.query("symbol", (), None, Options::default(), None);
@@ -47,13 +47,13 @@ impl Client {
         Ok(symbol)
     }
 
-    pub async fn get_nft_balance(&self, address: String) -> AppResult<u128> {
+    pub async fn get_erc721_nft_balance(&self, address: String) -> AppResult<u128> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
             self.parse_address(contract_address).unwrap(),
-            include_bytes!("./canvas.abi.json"),
+            include_bytes!("canvas_erc721.abi.json"),
         )?;
 
         let result = contract.query(
@@ -68,13 +68,13 @@ impl Client {
         Ok(balance_of.as_u128())
     }
 
-    pub async fn get_owner_of(&self, work_id: String) -> AppResult<String> {
+    pub async fn get_erc721_owner_of(&self, work_id: String) -> AppResult<String> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
             self.parse_address(contract_address).unwrap(),
-            include_bytes!("./canvas.abi.json"),
+            include_bytes!("canvas_erc721.abi.json"),
         )?;
 
         let result = contract.query("ownerAddressOf", work_id, None, Options::default(), None);
@@ -83,13 +83,13 @@ impl Client {
         Ok(address.to_string())
     }
 
-    pub async fn is_owned(&self, address: String, work_id: String) -> AppResult<bool> {
+    pub async fn is_erc721_owned(&self, address: String, work_id: String) -> AppResult<bool> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
             self.parse_address(contract_address).unwrap(),
-            include_bytes!("./canvas.abi.json"),
+            include_bytes!("canvas_erc721.abi.json"),
         )?;
 
         let wallet_address = self.parse_address(address).unwrap();
@@ -105,7 +105,7 @@ impl Client {
         Ok(is_own)
     }
 
-    pub async fn mint_nft(&self, work_id: String) -> AppResult<()> {
+    pub async fn mint_erc721(&self, work_id: String) -> AppResult<()> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
         let wallet_address = env::var("MY_WALLET_ADDRESS").expect("should set wallet address");
@@ -113,7 +113,7 @@ impl Client {
         let contract = Contract::from_json(
             self.cli.eth(),
             self.parse_address(contract_address).unwrap(),
-            include_bytes!("./canvas.abi.json"),
+            include_bytes!("canvas_erc721.abi.json"),
         )?;
 
         let prev_key = SecretKey::from_str(&wallet_secret).unwrap();

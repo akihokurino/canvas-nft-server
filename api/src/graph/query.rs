@@ -115,7 +115,7 @@ impl QueryRoot {
     async fn owner_of_nft(context: &Context, work_id: String) -> FieldResult<String> {
         let result = context
             .ethereum_cli
-            .get_owner_of(work_id)
+            .get_erc721_owner_of(work_id)
             .await
             .map_err(FieldErrorWithCode::from)?;
 
@@ -125,7 +125,7 @@ impl QueryRoot {
     async fn is_own_nft(context: &Context, address: String, work_id: String) -> FieldResult<bool> {
         let result = context
             .ethereum_cli
-            .is_owned(address, work_id)
+            .is_erc721_owned(address, work_id)
             .await
             .map_err(FieldErrorWithCode::from)?;
 

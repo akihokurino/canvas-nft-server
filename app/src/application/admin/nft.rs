@@ -34,7 +34,7 @@ impl Application {
         }
     }
 
-    pub async fn create_nft(
+    pub async fn create_erc721(
         &self,
         id: String,
         thumbnail_url: String,
@@ -81,11 +81,64 @@ impl Application {
         )
         .await?;
 
-        let name = self.ethereum_cli.get_nft_name().await?;
-        let symbol = self.ethereum_cli.get_nft_symbol().await?;
+        let name = self.ethereum_cli.get_erc721_nft_name().await?;
+        let symbol = self.ethereum_cli.get_erc721_nft_symbol().await?;
         println!("{}, {}", name, symbol);
 
-        self.ethereum_cli.mint_nft(work.id).await?;
+        self.ethereum_cli.mint_erc721(work.id).await?;
+
+        Ok(())
+    }
+
+    pub async fn create_erc1155(
+        &self,
+        id: String,
+        thumbnail_url: String,
+        point: i32,
+        level: i32,
+        amount: u32,
+    ) -> AppResult<()> {
+        let work = self.work_dao.get(id.clone()).await?;
+
+        let urls = self
+            .internal_api
+            .get_signed_urls(vec![thumbnail_url.clone()])
+            .await?;
+        let url = urls.first().unwrap();
+        let bytes = reqwest::get(url).await?.bytes().await?;
+
+        let s3_key = format!("{}/{}.png", NFT_ASSET_PATH_PREFIX, work.id.clone());
+        let uploaded_url = upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key,
+            bytes,
+            "image/png".to_string(),
+        )
+        .await?;
+
+        let metadata = Metadata::new(
+            work.id.clone(),
+            "create test nft from rust".to_string(),
+            uploaded_url,
+            point,
+            level,
+        );
+        let metadata = serde_json::to_string(&metadata)?;
+
+        let s3_key = format!(
+            "{}/{}.metadata.json",
+            NFT_ASSET_PATH_PREFIX,
+            work.id.clone()
+        );
+        upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key,
+            Bytes::from(metadata),
+            "application/json".to_string(),
+        )
+        .await?;
+
+        self.ethereum_cli.mint_erc1155(work.id, amount).await?;
 
         Ok(())
     }
