@@ -1,6 +1,7 @@
 use crate::AppResult;
 use aws_sdk_s3::presigning::config::PresigningConfig;
-use aws_sdk_s3::{ByteStream, Client};
+use aws_sdk_s3::types::ByteStream;
+use aws_sdk_s3::Client;
 use bytes::Bytes;
 use http::Uri;
 use std::time::Duration;

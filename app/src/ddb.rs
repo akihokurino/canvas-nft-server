@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-mod nft;
+mod asset;
 mod thumbnail;
 mod user;
 mod work;

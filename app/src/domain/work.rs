@@ -18,28 +18,16 @@ impl WorkStatus {
     }
 }
 
-#[derive(PartialEq, Clone, Debug)]
-pub enum WorkSortType {
-    PriceHigher,
-    PriceLower,
-}
-
 #[derive(Clone, Debug)]
 pub struct Work {
     pub id: String,
     pub video_path: String,
     pub status: WorkStatus,
-    pub price: i32,
 }
 
 impl Work {
     pub fn update_status(&mut self, status: WorkStatus) -> AppResult<()> {
         self.status = status;
-        Ok(())
-    }
-
-    pub fn update_price(&mut self, price: i32) -> AppResult<()> {
-        self.price = price;
         Ok(())
     }
 }
@@ -61,7 +49,6 @@ impl CSVParser for Work {
             id,
             video_path,
             status: WorkStatus::Prepare,
-            price: 0,
         };
         return Ok(Box::new(data));
     }

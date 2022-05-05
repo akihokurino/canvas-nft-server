@@ -13,7 +13,7 @@ use aws_sdk_dynamodb::error::{
     BatchGetItemError, DeleteItemError, GetItemError, GetItemErrorKind, PutItemError, QueryError,
     ScanError,
 };
-use aws_sdk_dynamodb::SdkError;
+use aws_sdk_dynamodb::types::SdkError;
 use aws_sdk_s3::error::{GetObjectError, GetObjectErrorKind, PutObjectError};
 use aws_sdk_sesv2::error::SendEmailError;
 use aws_sdk_sns::error::PublishError;

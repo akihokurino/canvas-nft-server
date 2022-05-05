@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  sam-app
+  canvas-nft-server
 Globals:
   Function:
     Timeout: 5
@@ -9,20 +9,20 @@ Globals:
 Parameters:
   SsmParameter:
     Type: String
-    Default: /canvas-store/server/dotenv
+    Default: /canvas-nft/server/dotenv
     Description: ssm parameter path
-  DomainName:
-    Type: String
-    Default: sample.akiho.app
-    Description: api service domain name
-  HostedZoneName:
-    Type: String
-    Default: akiho.app.
-    Description: hosted zone name for service domain
-  CertificateArn:
-    Type: String
-    Default: arn:aws:acm:ap-northeast-1:326914400610:certificate/703134f6-9e3b-40ba-aeb2-b9278b60ac6f
-    Description: certificate arn for service domain
+#  DomainName:
+#    Type: String
+#    Default: sample.akiho.app
+#    Description: api service domain name
+#  HostedZoneName:
+#    Type: String
+#    Default: akiho.app.
+#    Description: hosted zone name for service domain
+#  CertificateArn:
+#    Type: String
+#    Default: arn:aws:acm:ap-northeast-1:326914400610:certificate/703134f6-9e3b-40ba-aeb2-b9278b60ac6f
+#    Description: certificate arn for service domain
 
 Resources:
   ApiFunction:
@@ -70,7 +70,7 @@ Resources:
         Topic:
           Type: SNS
           Properties:
-            Topic: arn:aws:sns:ap-northeast-1:326914400610:canvas-store-topic
+            Topic: arn:aws:sns:ap-northeast-1:326914400610:canvas-nft-topic
       EventInvokeConfig:
         MaximumRetryAttempts: 0
       Environment:

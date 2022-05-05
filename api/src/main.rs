@@ -66,12 +66,12 @@ async fn graphql_route(
 }
 
 async fn authenticate(req: &HttpRequest) -> AuthUser {
-    if let Some(id) = get_into(req.headers(), "x-admin-user-id") {
+    if let Some(id) = get_into(req.headers(), "x-admin-id") {
         return AuthUser::Admin(id);
     }
 
-    if let Some(id) = get_into(req.headers(), "x-service-user-id") {
-        return AuthUser::Service(id);
+    if let Some(id) = get_into(req.headers(), "x-user-id") {
+        return AuthUser::User(id);
     }
 
     let token: &str = get(req.headers(), "authorization").unwrap_or_default();

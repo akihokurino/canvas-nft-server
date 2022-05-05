@@ -1,5 +1,5 @@
 use crate::aws::s3::upload_object;
-use crate::domain::nft::NFT;
+use crate::domain::asset::Asset;
 use crate::domain::work::Work;
 use crate::open_sea::metadata::Metadata;
 use crate::{ddb, ethereum, internal_api, open_sea, AppResult, NFT_ASSET_PATH_PREFIX};
@@ -10,7 +10,7 @@ pub struct Application {
     #[allow(dead_code)]
     me_id: String,
     work_dao: ddb::Dao<Work>,
-    nft_dao: ddb::Dao<NFT>,
+    nft_dao: ddb::Dao<Asset>,
     open_sea_cli: open_sea::Client,
     internal_api: internal_api::Client,
     ethereum_cli: ethereum::Client,
@@ -19,7 +19,7 @@ pub struct Application {
 impl Application {
     pub async fn new(me_id: String) -> Self {
         let work_dao: ddb::Dao<Work> = ddb::Dao::new().await;
-        let nft_dao: ddb::Dao<NFT> = ddb::Dao::new().await;
+        let nft_dao: ddb::Dao<Asset> = ddb::Dao::new().await;
         let open_sea_cli = open_sea::Client::new();
         let internal_api = internal_api::Client::new();
         let ethereum_cli = ethereum::Client::new();
@@ -159,9 +159,6 @@ impl Application {
             })
             .await?;
 
-        // TODO: usd -> jpy
-        work.update_price(0)?;
-
         let payment_tokens: Vec<&open_sea::api::get_asset::PaymentToken> = asset
             .collection
             .payment_tokens
@@ -170,7 +167,7 @@ impl Application {
             .collect();
         let payment_token = payment_tokens.first();
 
-        let nft = NFT::new(
+        let nft = Asset::new(
             work.id.clone(),
             contract_address,
             token_id,

@@ -1,5 +1,5 @@
 use crate::graph::enums::WorkStatus;
-use crate::graph::outputs::nft::NFT;
+use crate::graph::outputs::asset::Asset;
 use crate::graph::Context;
 use crate::FieldErrorWithCode;
 use app::{domain, AppError};
@@ -33,10 +33,6 @@ impl Work {
         WorkStatus::from(self.data.status.to_owned())
     }
 
-    fn price(&self) -> i32 {
-        self.data.price.to_owned()
-    }
-
     async fn thumbnails(&self, context: &Context) -> FieldResult<Vec<Thumbnail>> {
         let thumbnails = context
             .thumbnail_by_work_loader
@@ -48,7 +44,7 @@ impl Work {
             .collect())
     }
 
-    async fn nft(&self, context: &Context) -> FieldResult<Option<NFT>> {
+    async fn asset(&self, context: &Context) -> FieldResult<Option<Asset>> {
         let nft = context
             .nft_by_work_loader
             .load(self.data.id.to_owned())
@@ -61,7 +57,7 @@ impl Work {
             };
         }
 
-        Ok(Some(NFT::from(nft.ok().unwrap().to_owned())))
+        Ok(Some(Asset::from(nft.ok().unwrap().to_owned())))
     }
 }
 

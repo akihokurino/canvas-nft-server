@@ -1,5 +1,5 @@
 #[derive(Clone, Debug)]
-pub struct NFT {
+pub struct Asset {
     pub work_id: String,
     pub address: String,
     pub token_id: String,
@@ -12,7 +12,7 @@ pub struct NFT {
     pub eth_price: f64,
 }
 
-impl NFT {
+impl Asset {
     pub fn new(
         work_id: String,
         address: String,

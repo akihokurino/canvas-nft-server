@@ -2,7 +2,7 @@ MAKEFLAGS=--no-builtin-rules --no-builtin-variables --always-make
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 DEBUG_EMAIL := ""
-COGNITE_SESSION := ""
+COGNITO_SESSION := ""
 
 clean:
 	cargo clean
@@ -32,24 +32,24 @@ run-local:
 
 debug-set-password:
 	aws cognito-idp admin-set-user-password \
-        --user-pool-id ap-northeast-1_ad01JZ6My \
+        --user-pool-id ap-northeast-1_omBvnPYzl \
         --username ${DEBUG_EMAIL} \
         --password Test1234 \
         --profile me
 
 debug-challenge-password:
 	aws cognito-idp admin-respond-to-auth-challenge \
-		--user-pool-id ap-northeast-1_ad01JZ6My \
-		--client-id 6c724j24efe4iopddpkpmn2oef \
+		--user-pool-id ap-northeast-1_omBvnPYzl \
+		--client-id ehd60ftsekljsqu683f2j6i0e \
     	--challenge-name NEW_PASSWORD_REQUIRED \
         --challenge-responses NEW_PASSWORD=Test1234,USERNAME=${DEBUG_EMAIL} \
-        --session ${COGNITE_SESSION} \
+        --session ${COGNITO_SESSION} \
     	--profile me
 
 debug-token:
 	aws cognito-idp admin-initiate-auth \
-        --user-pool-id ap-northeast-1_ad01JZ6My \
-        --client-id 6c724j24efe4iopddpkpmn2oef \
+        --user-pool-id ap-northeast-1_omBvnPYzl \
+        --client-id ehd60ftsekljsqu683f2j6i0e \
         --auth-flow ADMIN_NO_SRP_AUTH \
         --auth-parameters USERNAME=${DEBUG_EMAIL},PASSWORD=Test1234 \
         --profile me

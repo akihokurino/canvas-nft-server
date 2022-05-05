@@ -35,7 +35,7 @@ pub async fn verify_token(token: &str) -> AppResult<AuthUser> {
     Ok(if raw_account_type.to_string() == "0".to_string() {
         AuthUser::Admin(sub)
     } else if raw_account_type.to_string() == "1".to_string() {
-        AuthUser::Service(sub)
+        AuthUser::User(sub)
     } else {
         AuthUser::None
     })

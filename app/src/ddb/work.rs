@@ -7,11 +7,10 @@ use aws_sdk_dynamodb::model::*;
 use aws_sdk_dynamodb::Client;
 use std::collections::{HashMap, HashSet};
 
-const TABLE_NAME: &str = "canvas-store-work";
+const TABLE_NAME: &str = "canvas-nft-work";
 const KEY_ID: &str = "ID";
 const KEY_VIDEO_PATH: &str = "VideoPath";
 const KEY_STATUS: &str = "Status";
-const KEY_PRICE: &str = "Price";
 
 impl work::Work {
     fn deserialize(data: HashMap<String, AttributeValue>) -> Option<Self> {
@@ -19,18 +18,15 @@ impl work::Work {
             Some(AttributeValue::S(id)),
             Some(AttributeValue::S(video_path)),
             Some(AttributeValue::S(status)),
-            Some(AttributeValue::N(price)),
         ) = (
             data.get(KEY_ID),
             data.get(KEY_VIDEO_PATH),
             data.get(KEY_STATUS),
-            data.get(KEY_PRICE),
         ) {
             let data = work::Work {
                 id: id.to_owned(),
                 video_path: video_path.to_owned(),
                 status: WorkStatus::from(status.to_owned().to_string()),
-                price: price.to_owned().parse().unwrap(),
             };
 
             return Some(data);
@@ -49,10 +45,6 @@ impl work::Work {
             .item(
                 KEY_STATUS,
                 AttributeValue::S(self.status.to_owned().to_string()),
-            )
-            .item(
-                KEY_PRICE,
-                AttributeValue::N(self.price.to_owned().to_string()),
             )
             .send()
             .await
@@ -97,7 +89,7 @@ impl Dao<work::Work> {
         let res = self
             .cli
             .query()
-            .index_name("Status-Price-Index")
+            .index_name("Status-Index")
             .key_condition_expression("#key = :value".to_string())
             .expression_attribute_names("#key".to_string(), KEY_STATUS)
             .expression_attribute_values(

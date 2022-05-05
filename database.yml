@@ -5,7 +5,7 @@ Resources:
   DDBUserTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: canvas-store-user
+      TableName: canvas-nft-user
       AttributeDefinitions:
         - AttributeName: ID
           AttributeType: S
@@ -13,43 +13,28 @@ Resources:
         - AttributeName: ID
           KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 3
-        WriteCapacityUnits: 3
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
   DDBWorkTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: canvas-store-work
+      TableName: canvas-nft-work
       AttributeDefinitions:
         - AttributeName: ID
           AttributeType: S
         - AttributeName: Status
           AttributeType: S
-        - AttributeName: Price
-          AttributeType: N
       KeySchema:
         - AttributeName: ID
           KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 3
-        WriteCapacityUnits: 3
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
       GlobalSecondaryIndexes:
-        - IndexName: ID-Price-Index
-          KeySchema:
-            - AttributeName: ID
-              KeyType: HASH
-            - AttributeName: Price
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 3
-            WriteCapacityUnits: 3
-        - IndexName: Status-Price-Index
+        - IndexName: Status-Index
           KeySchema:
             - AttributeName: Status
               KeyType: HASH
-            - AttributeName: Price
-              KeyType: RANGE
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
@@ -58,7 +43,7 @@ Resources:
   DDBThumbnailTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: canvas-store-thumbnail
+      TableName: canvas-nft-thumbnail
       AttributeDefinitions:
         - AttributeName: ID
           AttributeType: S
@@ -70,8 +55,8 @@ Resources:
         - AttributeName: ID
           KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 10
-        WriteCapacityUnits: 10
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
       GlobalSecondaryIndexes:
         - IndexName: ID-Order-Index
           KeySchema:
@@ -82,8 +67,8 @@ Resources:
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
-            ReadCapacityUnits: 10
-            WriteCapacityUnits: 10
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         - IndexName: WorkID-Order-Index
           KeySchema:
             - AttributeName: WorkID
@@ -93,12 +78,12 @@ Resources:
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
-            ReadCapacityUnits: 10
-            WriteCapacityUnits: 10
-  DDBNftTable:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+  DDBAssetTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: canvas-store-nft
+      TableName: canvas-nft-asset
       AttributeDefinitions:
         - AttributeName: WorkID
           AttributeType: S
@@ -106,5 +91,5 @@ Resources:
         - AttributeName: WorkID
           KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 3
-        WriteCapacityUnits: 3
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1

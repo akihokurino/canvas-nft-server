@@ -5,7 +5,7 @@ use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::Client;
 use std::collections::HashMap;
 
-const TABLE_NAME: &str = "canvas-store-thumbnail";
+const TABLE_NAME: &str = "canvas-nft-thumbnail";
 const KEY_ID: &str = "ID";
 const KEY_WORK_ID: &str = "WorkID";
 const KEY_IMAGE_PATH: &str = "ImagePath";

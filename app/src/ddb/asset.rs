@@ -5,7 +5,7 @@ use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::Client;
 use std::collections::HashMap;
 
-const TABLE_NAME: &str = "canvas-store-nft";
+const TABLE_NAME: &str = "canvas-nft-asset";
 const KEY_WORK_ID: &str = "WorkID";
 const KEY_ADDRESS: &str = "Address";
 const KEY_TOKEN_ID: &str = "TokenID";
@@ -17,7 +17,7 @@ const KEY_PERMALINK: &str = "Permalink";
 const KEY_USD_PRICE: &str = "UsdPrice";
 const KEY_ETH_PRICE: &str = "EthPrice";
 
-impl nft::NFT {
+impl asset::Asset {
     fn deserialize(data: HashMap<String, AttributeValue>) -> Option<Self> {
         if let (
             Some(AttributeValue::S(work_id)),
@@ -42,7 +42,7 @@ impl nft::NFT {
             data.get(KEY_USD_PRICE),
             data.get(KEY_ETH_PRICE),
         ) {
-            let data = nft::NFT {
+            let data = asset::Asset {
                 work_id: work_id.to_owned(),
                 address: address.to_owned(),
                 token_id: token_id.to_owned(),
@@ -96,13 +96,13 @@ impl nft::NFT {
     }
 }
 
-impl Dao<nft::NFT> {
-    pub async fn get(&self, work_id: String) -> AppResult<nft::NFT> {
+impl Dao<asset::Asset> {
+    pub async fn get(&self, work_id: String) -> AppResult<asset::Asset> {
         let res = self
             .cli
             .get_item()
             .table_name(self.table_name_provider.with(TABLE_NAME))
-            .key(KEY_WORK_ID, nft::NFT::primary_key(work_id))
+            .key(KEY_WORK_ID, asset::Asset::primary_key(work_id))
             .send()
             .await?;
 
@@ -112,10 +112,10 @@ impl Dao<nft::NFT> {
 
         let data = res.item.unwrap();
 
-        Ok(nft::NFT::deserialize(data).unwrap())
+        Ok(asset::Asset::deserialize(data).unwrap())
     }
 
-    pub async fn put(&self, item: &nft::NFT) -> AppResult<()> {
+    pub async fn put(&self, item: &asset::Asset) -> AppResult<()> {
         item.serialize_and_save(&self.cli, self.table_name_provider.with(TABLE_NAME))
             .await?;
         Ok(())

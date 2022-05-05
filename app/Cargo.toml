@@ -6,13 +6,13 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aws-config = "0.6.0"
-aws-sdk-dynamodb = "0.6.0"
-aws-sdk-ssm = "0.6.0"
-aws-sdk-s3 = "0.6.0"
-aws-sdk-sns = "0.6.0"
-aws-sdk-sesv2 = "0.6.0"
-aws-sdk-cognitoidentityprovider = "0.6.0"
+aws-config = "0.11.0"
+aws-sdk-dynamodb = "0.11.0"
+aws-sdk-ssm = "0.11.0"
+aws-sdk-s3 = "0.11.0"
+aws-sdk-sns = "0.11.0"
+aws-sdk-sesv2 = "0.11.0"
+aws-sdk-cognitoidentityprovider = "0.11.0"
 tokio = { version = "1", features = ["full"] }
 thiserror = "1.0"
 uuid = { version = "0.8", features = ["serde", "v4"] }

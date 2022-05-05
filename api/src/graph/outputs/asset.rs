@@ -2,12 +2,12 @@ use crate::graph::Context;
 use app::domain;
 
 #[derive(Debug, Clone)]
-pub struct NFT {
-    data: domain::nft::NFT,
+pub struct Asset {
+    data: domain::asset::Asset,
 }
 
 #[juniper::graphql_object(Context = Context)]
-impl NFT {
+impl Asset {
     fn work_id(&self) -> String {
         self.data.work_id.to_owned()
     }
@@ -49,8 +49,8 @@ impl NFT {
     }
 }
 
-impl From<domain::nft::NFT> for NFT {
-    fn from(data: domain::nft::NFT) -> Self {
+impl From<domain::asset::Asset> for Asset {
+    fn from(data: domain::asset::Asset) -> Self {
         Self { data }
     }
 }

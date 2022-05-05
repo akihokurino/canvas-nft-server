@@ -5,7 +5,7 @@ pub enum AuthUser {
     // 管理ユーザー
     Admin(String),
     // 一般ユーザー（ログイン済）
-    Service(String),
+    User(String),
     // 一般ユーザー（未ログイン）
     None,
 }
@@ -14,7 +14,7 @@ impl AuthUser {
     pub fn user_id(&self) -> Option<String> {
         match self {
             AuthUser::Admin(id) => Some(id.to_owned()),
-            AuthUser::Service(id) => Some(id.to_owned()),
+            AuthUser::User(id) => Some(id.to_owned()),
             _ => None,
         }
     }
@@ -28,7 +28,7 @@ impl AuthUser {
 
     pub fn is_service(&self) -> bool {
         match self {
-            AuthUser::Service(_id) => true,
+            AuthUser::User(_id) => true,
             _ => false,
         }
     }
@@ -65,5 +65,5 @@ pub struct UserWithBalance {
     pub id: String,
     pub address: String,
     pub balance: f64,
-    pub nft_num: u128
+    pub nft_num: u128,
 }
