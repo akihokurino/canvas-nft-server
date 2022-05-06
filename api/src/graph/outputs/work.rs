@@ -1,5 +1,5 @@
 use crate::graph::enums::WorkStatus;
-use crate::graph::outputs::asset::Asset;
+use crate::graph::outputs::asset::{Asset1155, Asset721};
 use crate::graph::Context;
 use crate::FieldErrorWithCode;
 use app::{domain, AppError};
@@ -44,20 +44,36 @@ impl Work {
             .collect())
     }
 
-    async fn asset(&self, context: &Context) -> FieldResult<Option<Asset>> {
-        let nft = context
-            .nft_by_work_loader
+    async fn asset721(&self, context: &Context) -> FieldResult<Option<Asset721>> {
+        let asset = context
+            .asset721_by_work_loader
             .load(self.data.id.to_owned())
             .await;
 
-        if let Err(err) = nft {
+        if let Err(err) = asset {
             return match err {
                 AppError::NotFound => Ok(None),
                 _ => Err(FieldError::from(FieldErrorWithCode::from(err))),
             };
         }
 
-        Ok(Some(Asset::from(nft.ok().unwrap().to_owned())))
+        Ok(Some(Asset721::from(asset.ok().unwrap().to_owned())))
+    }
+
+    async fn asset1155(&self, context: &Context) -> FieldResult<Option<Asset1155>> {
+        let asset = context
+            .asset1155_by_work_loader
+            .load(self.data.id.to_owned())
+            .await;
+
+        if let Err(err) = asset {
+            return match err {
+                AppError::NotFound => Ok(None),
+                _ => Err(FieldError::from(FieldErrorWithCode::from(err))),
+            };
+        }
+
+        Ok(Some(Asset1155::from(asset.ok().unwrap().to_owned())))
     }
 }
 

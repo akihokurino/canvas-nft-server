@@ -33,6 +33,7 @@ Resources:
       Runtime: provided.al2
       MemorySize: 128
       Tracing: Active
+      Timeout: 900
       Events:
         ProxyApiRoot:
           Type: Api

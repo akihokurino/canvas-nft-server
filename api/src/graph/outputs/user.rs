@@ -24,6 +24,23 @@ impl User {
     fn nft_721_num(&self) -> i32 {
         TryFrom::try_from(self.data.nft_721_num.to_owned()).unwrap_or_default()
     }
+
+    fn nft_1155_num(&self) -> Vec<Nft1155Balance> {
+        self.data
+            .nft_1155_num
+            .iter()
+            .map(|v| Nft1155Balance {
+                work_id: v.0.to_owned(),
+                balance: TryFrom::try_from(v.1.to_owned()).unwrap_or_default(),
+            })
+            .collect()
+    }
+}
+
+#[derive(Debug, Clone, GraphQLObject)]
+pub struct Nft1155Balance {
+    work_id: String,
+    balance: i32,
 }
 
 impl From<domain::user::UserWithBalance> for User {

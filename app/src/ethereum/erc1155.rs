@@ -21,6 +21,34 @@ impl Client {
         Ok(contract)
     }
 
+    pub async fn get_erc1155_nft_balance(&self, user: &User) -> AppResult<Vec<(String, u128)>> {
+        let contract = self.erc1155()?;
+
+        let result = contract.query("usedTokenNames", (), None, Options::default(), None);
+        let names: Vec<String> = result.await?;
+
+        let mut balances: Vec<(String, u128)> = vec![];
+        for name in names {
+            let result = contract.query("tokenIdOf", name.clone(), None, Options::default(), None);
+            let token_id: u128 = result.await?;
+
+            let result = contract.query(
+                "balanceOf",
+                (
+                    self.parse_address(user.wallet_address.to_owned()).unwrap(),
+                    token_id,
+                ),
+                None,
+                Options::default(),
+                None,
+            );
+            let balance_of: U256 = result.await?;
+            balances.push((name.to_owned(), balance_of.to_owned().as_u128()))
+        }
+
+        Ok(balances)
+    }
+
     pub async fn get_erc1155_used_names(&self) -> AppResult<Vec<String>> {
         let contract = self.erc1155()?;
         let result = contract.query("usedTokenNames", (), None, Options::default(), None);

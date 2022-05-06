@@ -21,22 +21,6 @@ impl Client {
         Ok(contract)
     }
 
-    pub async fn get_erc721_nft_name(&self) -> AppResult<String> {
-        let contract = self.erc721()?;
-        let result = contract.query("name", (), None, Options::default(), None);
-        let name: String = result.await?;
-
-        Ok(name)
-    }
-
-    pub async fn get_erc721_nft_symbol(&self) -> AppResult<String> {
-        let contract = self.erc721()?;
-        let result = contract.query("symbol", (), None, Options::default(), None);
-        let symbol: String = result.await?;
-
-        Ok(symbol)
-    }
-
     pub async fn get_erc721_nft_balance(&self, user: &User) -> AppResult<u128> {
         let contract = self.erc721()?;
         let result = contract.query(

@@ -24,9 +24,10 @@ impl Application {
     pub async fn get_me(&self) -> AppResult<UserWithBalance> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
         let balance = self.ethereum_cli.get_balance(&user).await?;
-        let nft_balance = self.ethereum_cli.get_erc721_nft_balance(&user).await?;
+        let nft_721_balance = self.ethereum_cli.get_erc721_nft_balance(&user).await?;
+        let nft_1155_balance = self.ethereum_cli.get_erc1155_nft_balance(&user).await?;
 
-        Ok(user.with_balance(balance, nft_balance))
+        Ok(user.with_balance(balance, nft_721_balance, nft_1155_balance))
     }
 
     pub async fn register(
