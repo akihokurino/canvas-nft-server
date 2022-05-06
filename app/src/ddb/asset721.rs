@@ -5,9 +5,9 @@ use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::Client;
 use std::collections::HashMap;
 
-const TABLE_NAME: &str = "canvas-nft-asset";
+const TABLE_NAME: &str = "canvas-nft-asset721";
 const KEY_WORK_ID: &str = "WorkID";
-const KEY_ADDRESS: &str = "Address";
+const KEY_CONTRACT_ADDRESS: &str = "ContractAddress";
 const KEY_TOKEN_ID: &str = "TokenID";
 const KEY_NAME: &str = "Name";
 const KEY_DESCRIPTION: &str = "Description";
@@ -17,7 +17,7 @@ const KEY_PERMALINK: &str = "Permalink";
 const KEY_USD_PRICE: &str = "UsdPrice";
 const KEY_ETH_PRICE: &str = "EthPrice";
 
-impl asset::Asset {
+impl asset::Asset721 {
     fn deserialize(data: HashMap<String, AttributeValue>) -> Option<Self> {
         if let (
             Some(AttributeValue::S(work_id)),
@@ -32,7 +32,7 @@ impl asset::Asset {
             Some(AttributeValue::N(eth_price)),
         ) = (
             data.get(KEY_WORK_ID),
-            data.get(KEY_ADDRESS),
+            data.get(KEY_CONTRACT_ADDRESS),
             data.get(KEY_TOKEN_ID),
             data.get(KEY_NAME),
             data.get(KEY_DESCRIPTION),
@@ -42,9 +42,9 @@ impl asset::Asset {
             data.get(KEY_USD_PRICE),
             data.get(KEY_ETH_PRICE),
         ) {
-            let data = asset::Asset {
+            let data = asset::Asset721 {
                 work_id: work_id.to_owned(),
-                address: address.to_owned(),
+                contract_address: address.to_owned(),
                 token_id: token_id.to_owned(),
                 name: name.to_owned(),
                 description: description.to_owned(),
@@ -64,7 +64,10 @@ impl asset::Asset {
         cli.put_item()
             .table_name(table_name)
             .item(KEY_WORK_ID, AttributeValue::S(self.work_id.to_owned()))
-            .item(KEY_ADDRESS, AttributeValue::S(self.address.to_owned()))
+            .item(
+                KEY_CONTRACT_ADDRESS,
+                AttributeValue::S(self.contract_address.to_owned()),
+            )
             .item(KEY_TOKEN_ID, AttributeValue::S(self.token_id.to_owned()))
             .item(KEY_NAME, AttributeValue::S(self.name.to_owned()))
             .item(
@@ -96,13 +99,13 @@ impl asset::Asset {
     }
 }
 
-impl Dao<asset::Asset> {
-    pub async fn get(&self, work_id: String) -> AppResult<asset::Asset> {
+impl Dao<asset::Asset721> {
+    pub async fn get(&self, work_id: String) -> AppResult<asset::Asset721> {
         let res = self
             .cli
             .get_item()
             .table_name(self.table_name_provider.with(TABLE_NAME))
-            .key(KEY_WORK_ID, asset::Asset::primary_key(work_id))
+            .key(KEY_WORK_ID, asset::Asset721::primary_key(work_id))
             .send()
             .await?;
 
@@ -112,10 +115,10 @@ impl Dao<asset::Asset> {
 
         let data = res.item.unwrap();
 
-        Ok(asset::Asset::deserialize(data).unwrap())
+        Ok(asset::Asset721::deserialize(data).unwrap())
     }
 
-    pub async fn put(&self, item: &asset::Asset) -> AppResult<()> {
+    pub async fn put(&self, item: &asset::Asset721) -> AppResult<()> {
         item.serialize_and_save(&self.cli, self.table_name_provider.with(TABLE_NAME))
             .await?;
         Ok(())

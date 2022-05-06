@@ -24,6 +24,14 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
             .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)))?;
     }
 
+    if command == "sync-nft-asset" {
+        let admin_nft_app = admin::nft::Application::new("batch".to_string()).await;
+        admin_nft_app
+            .sync_asset()
+            .await
+            .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)))?;
+    }
+
     Ok(())
 }
 

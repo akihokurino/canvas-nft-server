@@ -92,10 +92,23 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
-  DDBAssetTable:
+  DDBAsset721Table:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: canvas-nft-asset
+      TableName: canvas-nft-asset721
+      AttributeDefinitions:
+        - AttributeName: WorkID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: WorkID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+  DDBAsset1155Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: canvas-nft-asset1155
       AttributeDefinitions:
         - AttributeName: WorkID
           AttributeType: S

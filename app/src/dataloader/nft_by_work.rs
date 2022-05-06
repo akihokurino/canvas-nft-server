@@ -8,10 +8,10 @@ use std::collections::HashMap;
 pub struct Batcher {}
 
 #[async_trait]
-impl BatchFn<String, AppResult<asset::Asset>> for Batcher {
-    async fn load(&mut self, keys: &[String]) -> HashMap<String, AppResult<asset::Asset>> {
+impl BatchFn<String, AppResult<asset::Asset721>> for Batcher {
+    async fn load(&mut self, keys: &[String]) -> HashMap<String, AppResult<asset::Asset721>> {
         let mut hashmap = HashMap::new();
-        let dao: Dao<asset::Asset> = Dao::new().await;
+        let dao: Dao<asset::Asset721> = Dao::new().await;
         for id in keys {
             let item = dao.get(id.clone()).await;
             hashmap.insert(id.to_owned(), item);
@@ -26,4 +26,4 @@ impl Batcher {
     }
 }
 
-pub type Loader = cached::Loader<String, AppResult<asset::Asset>, Batcher>;
+pub type Loader = cached::Loader<String, AppResult<asset::Asset721>, Batcher>;

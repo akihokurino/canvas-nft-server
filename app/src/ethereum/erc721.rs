@@ -6,18 +6,23 @@ use std::env;
 use std::str::FromStr;
 use web3::contract::{Contract, Options};
 use web3::signing::SecretKeyRef;
-use web3::types::{Address, U256};
+use web3::transports::Http;
+use web3::types::U256;
 
 impl Client {
-    pub async fn get_erc721_nft_name(&self) -> AppResult<String> {
+    fn erc721(&self) -> AppResult<Contract<Http>> {
         let contract_address =
             env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
-            self.parse_address(contract_address).unwrap(),
+            self.parse_address(contract_address.clone()).unwrap(),
             include_bytes!("canvas_erc721.abi.json"),
         )?;
+        Ok(contract)
+    }
 
+    pub async fn get_erc721_nft_name(&self) -> AppResult<String> {
+        let contract = self.erc721()?;
         let result = contract.query("name", (), None, Options::default(), None);
         let name: String = result.await?;
 
@@ -25,14 +30,7 @@ impl Client {
     }
 
     pub async fn get_erc721_nft_symbol(&self) -> AppResult<String> {
-        let contract_address =
-            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
-        let contract = Contract::from_json(
-            self.cli.eth(),
-            self.parse_address(contract_address).unwrap(),
-            include_bytes!("canvas_erc721.abi.json"),
-        )?;
-
+        let contract = self.erc721()?;
         let result = contract.query("symbol", (), None, Options::default(), None);
         let symbol: String = result.await?;
 
@@ -40,14 +38,7 @@ impl Client {
     }
 
     pub async fn get_erc721_nft_balance(&self, user: &User) -> AppResult<u128> {
-        let contract_address =
-            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
-        let contract = Contract::from_json(
-            self.cli.eth(),
-            self.parse_address(contract_address).unwrap(),
-            include_bytes!("canvas_erc721.abi.json"),
-        )?;
-
+        let contract = self.erc721()?;
         let result = contract.query(
             "balanceOf",
             self.parse_address(user.wallet_address.to_owned()).unwrap(),
@@ -60,15 +51,24 @@ impl Client {
         Ok(balance_of.as_u128())
     }
 
-    pub async fn mint_erc721(&self, user: &User, work_id: String) -> AppResult<()> {
-        let contract_address =
-            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
-        let contract = Contract::from_json(
-            self.cli.eth(),
-            self.parse_address(contract_address).unwrap(),
-            include_bytes!("canvas_erc721.abi.json"),
-        )?;
+    pub async fn get_erc721_used_names(&self) -> AppResult<Vec<String>> {
+        let contract = self.erc721()?;
+        let result = contract.query("usedTokenNames", (), None, Options::default(), None);
+        let names: Vec<String> = result.await?;
 
+        Ok(names)
+    }
+
+    pub async fn get_erc721_token_id_of(&self, work_id: String) -> AppResult<u128> {
+        let contract = self.erc721()?;
+        let result = contract.query("tokenIdOf", work_id, None, Options::default(), None);
+        let id: u128 = result.await?;
+
+        Ok(id)
+    }
+
+    pub async fn mint_erc721(&self, user: &User, work_id: String) -> AppResult<()> {
+        let contract = self.erc721()?;
         let prev_key = SecretKey::from_str(&user.wallet_secret).unwrap();
         let gas_limit: i64 = 5500000;
         let gas_price: i64 = 35000000000;

@@ -3,7 +3,7 @@ use app::domain;
 
 #[derive(Debug, Clone)]
 pub struct Asset {
-    data: domain::asset::Asset,
+    data: domain::asset::Asset721,
 }
 
 #[juniper::graphql_object(Context = Context)]
@@ -13,7 +13,7 @@ impl Asset {
     }
 
     fn address(&self) -> String {
-        self.data.address.to_owned()
+        self.data.contract_address.to_owned()
     }
 
     fn token_id(&self) -> String {
@@ -49,8 +49,8 @@ impl Asset {
     }
 }
 
-impl From<domain::asset::Asset> for Asset {
-    fn from(data: domain::asset::Asset) -> Self {
+impl From<domain::asset::Asset721> for Asset {
+    fn from(data: domain::asset::Asset721) -> Self {
         Self { data }
     }
 }

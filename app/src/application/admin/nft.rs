@@ -1,10 +1,10 @@
 use crate::aws::s3::upload_object;
-use crate::domain::asset::Asset;
+use crate::domain::asset::{Asset1155, Asset721};
 use crate::domain::user::User;
-use crate::domain::work::Work;
+use crate::domain::work::{Work, WorkStatus};
 use crate::open_sea::metadata::Metadata;
 use crate::{
-    ddb, ethereum, internal_api, open_sea, AppResult, NFT_1155_ASSET_PATH_PREFIX,
+    ddb, ethereum, internal_api, open_sea, AppError, AppResult, NFT_1155_ASSET_PATH_PREFIX,
     NFT_721_ASSET_PATH_PREFIX,
 };
 use bytes::Bytes;
@@ -14,7 +14,8 @@ pub struct Application {
     #[allow(dead_code)]
     me_id: String,
     work_dao: ddb::Dao<Work>,
-    nft_dao: ddb::Dao<Asset>,
+    asset721_dao: ddb::Dao<Asset721>,
+    asset1155_dao: ddb::Dao<Asset1155>,
     user_dao: ddb::Dao<User>,
     open_sea_cli: open_sea::Client,
     internal_api: internal_api::Client,
@@ -24,7 +25,8 @@ pub struct Application {
 impl Application {
     pub async fn new(me_id: String) -> Self {
         let work_dao: ddb::Dao<Work> = ddb::Dao::new().await;
-        let nft_dao: ddb::Dao<Asset> = ddb::Dao::new().await;
+        let asset721_dao: ddb::Dao<Asset721> = ddb::Dao::new().await;
+        let asset1155_dao: ddb::Dao<Asset1155> = ddb::Dao::new().await;
         let user_dao: ddb::Dao<User> = ddb::Dao::new().await;
         let open_sea_cli = open_sea::Client::new();
         let internal_api = internal_api::Client::new();
@@ -33,7 +35,8 @@ impl Application {
         Self {
             me_id,
             work_dao,
-            nft_dao,
+            asset721_dao,
+            asset1155_dao,
             user_dao,
             open_sea_cli,
             internal_api,
@@ -154,45 +157,86 @@ impl Application {
         Ok(())
     }
 
-    pub async fn sync_status(
-        &self,
-        id: String,
-        contract_address: String,
-        token_id: String,
-    ) -> AppResult<()> {
-        let mut work = self.work_dao.get(id.clone()).await?;
+    pub async fn sync_asset(&self) -> AppResult<()> {
+        let contract_address =
+            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+        let used_721_ids = self.ethereum_cli.get_erc721_used_names().await?;
+        for work_id in used_721_ids {
+            println!("sync work for erc721: {}", work_id);
+            let work = self.work_dao.get(work_id.clone()).await;
+            if let Err(err) = work {
+                if err != AppError::NotFound {
+                    return Err(err);
+                }
+                continue;
+            }
+            let mut work = work.ok().unwrap();
 
-        let asset = self
-            .open_sea_cli
-            .get_asset(open_sea::api::get_asset::Input {
-                address: contract_address.clone(),
-                token_id: token_id.clone(),
-            })
-            .await?;
+            let token_id = self.ethereum_cli.get_erc721_token_id_of(work_id).await?;
+            let asset = self
+                .open_sea_cli
+                .get_asset(open_sea::api::get_asset::Input {
+                    address: contract_address.clone(),
+                    token_id: token_id.clone().to_string(),
+                })
+                .await?;
 
-        let payment_tokens: Vec<&open_sea::api::get_asset::PaymentToken> = asset
-            .collection
-            .payment_tokens
-            .iter()
-            .filter(|v| v.symbol.to_owned().unwrap_or_default() == "ETH")
-            .collect();
-        let payment_token = payment_tokens.first();
+            work.status = WorkStatus::PublishNFT;
 
-        let nft = Asset::new(
-            work.id.clone(),
-            contract_address,
-            token_id,
-            asset.name,
-            asset.description,
-            asset.image_url,
-            asset.image_preview_url,
-            asset.permalink,
-            payment_token.map_or(0.0, |v| v.usd_price.unwrap_or_default()),
-            payment_token.map_or(0.0, |v| v.eth_price.unwrap_or_default()),
-        );
+            let asset = Asset721::new(
+                work.id.clone(),
+                contract_address.clone(),
+                token_id.clone().to_string(),
+                asset.name,
+                asset.description,
+                asset.image_url,
+                asset.image_preview_url,
+                asset.permalink,
+            );
 
-        self.work_dao.put(&work).await?;
-        self.nft_dao.put(&nft).await?;
+            self.work_dao.put(&work).await?;
+            self.asset721_dao.put(&asset).await?;
+        }
+
+        let contract_address =
+            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+        let used_1155_ids = self.ethereum_cli.get_erc1155_used_names().await?;
+        for work_id in used_1155_ids {
+            println!("sync work for erc1155: {}", work_id);
+            let work = self.work_dao.get(work_id.clone()).await;
+            if let Err(err) = work {
+                if err != AppError::NotFound {
+                    return Err(err);
+                }
+                continue;
+            }
+            let mut work = work.ok().unwrap();
+
+            let token_id = self.ethereum_cli.get_erc1155_token_id_of(work_id).await?;
+            let asset = self
+                .open_sea_cli
+                .get_asset(open_sea::api::get_asset::Input {
+                    address: contract_address.clone(),
+                    token_id: token_id.clone().to_string(),
+                })
+                .await?;
+
+            work.status = WorkStatus::PublishNFT;
+
+            let asset = Asset1155::new(
+                work.id.clone(),
+                contract_address.clone(),
+                token_id.clone().to_string(),
+                asset.name,
+                asset.description,
+                asset.image_url,
+                asset.image_preview_url,
+                asset.permalink,
+            );
+
+            self.work_dao.put(&work).await?;
+            self.asset1155_dao.put(&asset).await?;
+        }
 
         Ok(())
     }

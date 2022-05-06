@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-mod asset;
+mod asset1155;
+mod asset721;
 mod thumbnail;
 mod user;
 mod work;

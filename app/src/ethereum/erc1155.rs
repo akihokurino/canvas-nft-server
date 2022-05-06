@@ -6,18 +6,39 @@ use std::env;
 use std::str::FromStr;
 use web3::contract::{Contract, Options};
 use web3::signing::SecretKeyRef;
+use web3::transports::Http;
 use web3::types::U256;
 
 impl Client {
-    pub async fn mint_erc1155(&self, user: &User, work_id: String, amount: u32) -> AppResult<()> {
+    fn erc1155(&self) -> AppResult<Contract<Http>> {
         let contract_address =
             env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
-            self.parse_address(contract_address).unwrap(),
+            self.parse_address(contract_address.clone()).unwrap(),
             include_bytes!("canvas_erc1155.abi.json"),
         )?;
+        Ok(contract)
+    }
 
+    pub async fn get_erc1155_used_names(&self) -> AppResult<Vec<String>> {
+        let contract = self.erc1155()?;
+        let result = contract.query("usedTokenNames", (), None, Options::default(), None);
+        let names: Vec<String> = result.await?;
+
+        Ok(names)
+    }
+
+    pub async fn get_erc1155_token_id_of(&self, work_id: String) -> AppResult<u128> {
+        let contract = self.erc1155()?;
+        let result = contract.query("tokenIdOf", work_id, None, Options::default(), None);
+        let id: u128 = result.await?;
+
+        Ok(id)
+    }
+
+    pub async fn mint_erc1155(&self, user: &User, work_id: String, amount: u32) -> AppResult<()> {
+        let contract = self.erc1155()?;
         let prev_key = SecretKey::from_str(&user.wallet_secret).unwrap();
         let gas_limit: i64 = 5500000;
         let gas_price: i64 = 35000000000;
