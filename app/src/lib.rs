@@ -4,7 +4,7 @@ mod csv_loader;
 pub mod dataloader;
 mod ddb;
 pub mod domain;
-pub mod ethereum;
+mod ethereum;
 pub mod internal_api;
 mod open_sea;
 
@@ -24,7 +24,8 @@ use thiserror::Error as ThisErr;
 
 pub const WORK_CSV_PATH_PREFIX: &str = "work_csv";
 pub const THUMBNAIL_CSV_PATH_PREFIX: &str = "thumbnail_csv";
-pub const NFT_ASSET_PATH_PREFIX: &str = "nft_asset";
+pub const NFT_721_ASSET_PATH_PREFIX: &str = "721_asset";
+pub const NFT_1155_ASSET_PATH_PREFIX: &str = "1155_asset";
 
 #[derive(ThisErr, Debug, PartialOrd, PartialEq, Clone)]
 pub enum AppError {

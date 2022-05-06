@@ -93,13 +93,13 @@ impl Application {
         .await?;
         let works = load_from_csv::<Work>(bytes, None)?;
         for work in works {
-            let current = self.work_dao.get(work.id).await;
+            let current = self.work_dao.get(work.id.clone()).await;
             if let Ok(mut w) = current {
                 w.video_path = work.video_path;
                 self.work_dao.put(&w).await?;
                 continue;
             }
-            if let Err(err) = user {
+            if let Err(err) = current {
                 if err != AppError::NotFound {
                     return Err(err);
                 }
@@ -131,13 +131,13 @@ impl Application {
 
         let works = load_from_csv::<Work>(s3_data, None)?;
         for work in works {
-            let current = self.work_dao.get(work.id).await;
+            let current = self.work_dao.get(work.id.clone()).await;
             if let Ok(mut w) = current {
                 w.video_path = work.video_path;
                 self.work_dao.put(&w).await?;
                 continue;
             }
-            if let Err(err) = user {
+            if let Err(err) = current {
                 if err != AppError::NotFound {
                     return Err(err);
                 }

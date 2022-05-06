@@ -1,18 +1,17 @@
 use crate::aws::cognito;
-use crate::ddb::Dao;
 use crate::domain::user::{User, UserWithBalance};
-use crate::{ethereum, AppError, AppResult};
+use crate::{ddb, ethereum, AppError, AppResult};
 
 pub struct Application {
     #[allow(dead_code)]
     me_id: String,
-    user_dao: Dao<User>,
+    user_dao: ddb::Dao<User>,
     ethereum_cli: ethereum::Client,
 }
 
 impl Application {
     pub async fn new(me_id: String) -> Self {
-        let user_dao: Dao<User> = Dao::new().await;
+        let user_dao: ddb::Dao<User> = ddb::Dao::new().await;
         let ethereum_cli = ethereum::Client::new();
 
         Self {
@@ -24,14 +23,8 @@ impl Application {
 
     pub async fn get_me(&self) -> AppResult<UserWithBalance> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
-        let balance = self
-            .ethereum_cli
-            .get_balance(user.wallet_address.clone())
-            .await?;
-        let nft_balance = self
-            .ethereum_cli
-            .get_erc721_nft_balance(user.wallet_address.clone())
-            .await?;
+        let balance = self.ethereum_cli.get_balance(&user).await?;
+        let nft_balance = self.ethereum_cli.get_erc721_nft_balance(&user).await?;
 
         Ok(user.with_balance(balance, nft_balance))
     }

@@ -1,8 +1,12 @@
 use crate::aws::s3::upload_object;
 use crate::domain::asset::Asset;
+use crate::domain::user::User;
 use crate::domain::work::Work;
 use crate::open_sea::metadata::Metadata;
-use crate::{ddb, ethereum, internal_api, open_sea, AppResult, NFT_ASSET_PATH_PREFIX};
+use crate::{
+    ddb, ethereum, internal_api, open_sea, AppResult, NFT_1155_ASSET_PATH_PREFIX,
+    NFT_721_ASSET_PATH_PREFIX,
+};
 use bytes::Bytes;
 use std::env;
 
@@ -11,6 +15,7 @@ pub struct Application {
     me_id: String,
     work_dao: ddb::Dao<Work>,
     nft_dao: ddb::Dao<Asset>,
+    user_dao: ddb::Dao<User>,
     open_sea_cli: open_sea::Client,
     internal_api: internal_api::Client,
     ethereum_cli: ethereum::Client,
@@ -20,6 +25,7 @@ impl Application {
     pub async fn new(me_id: String) -> Self {
         let work_dao: ddb::Dao<Work> = ddb::Dao::new().await;
         let nft_dao: ddb::Dao<Asset> = ddb::Dao::new().await;
+        let user_dao: ddb::Dao<User> = ddb::Dao::new().await;
         let open_sea_cli = open_sea::Client::new();
         let internal_api = internal_api::Client::new();
         let ethereum_cli = ethereum::Client::new();
@@ -28,6 +34,7 @@ impl Application {
             me_id,
             work_dao,
             nft_dao,
+            user_dao,
             open_sea_cli,
             internal_api,
             ethereum_cli,
@@ -37,20 +44,21 @@ impl Application {
     pub async fn create_erc721(
         &self,
         id: String,
-        thumbnail_url: String,
+        gs_path: String,
         point: i32,
         level: i32,
     ) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
         let work = self.work_dao.get(id.clone()).await?;
 
         let urls = self
             .internal_api
-            .get_signed_urls(vec![thumbnail_url.clone()])
+            .get_signed_urls(vec![gs_path.clone()])
             .await?;
         let url = urls.first().unwrap();
         let bytes = reqwest::get(url).await?.bytes().await?;
 
-        let s3_key = format!("{}/{}.png", NFT_ASSET_PATH_PREFIX, work.id.clone());
+        let s3_key = format!("{}/{}.png", NFT_721_ASSET_PATH_PREFIX, work.id.clone());
         let uploaded_url = upload_object(
             env::var("S3_USER_BUCKET").unwrap(),
             s3_key,
@@ -70,7 +78,7 @@ impl Application {
 
         let s3_key = format!(
             "{}/{}.metadata.json",
-            NFT_ASSET_PATH_PREFIX,
+            NFT_721_ASSET_PATH_PREFIX,
             work.id.clone()
         );
         upload_object(
@@ -85,7 +93,7 @@ impl Application {
         let symbol = self.ethereum_cli.get_erc721_nft_symbol().await?;
         println!("{}, {}", name, symbol);
 
-        self.ethereum_cli.mint_erc721(work.id).await?;
+        self.ethereum_cli.mint_erc721(&user, work.id).await?;
 
         Ok(())
     }
@@ -93,21 +101,22 @@ impl Application {
     pub async fn create_erc1155(
         &self,
         id: String,
-        thumbnail_url: String,
+        gs_path: String,
         point: i32,
         level: i32,
         amount: u32,
     ) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
         let work = self.work_dao.get(id.clone()).await?;
 
         let urls = self
             .internal_api
-            .get_signed_urls(vec![thumbnail_url.clone()])
+            .get_signed_urls(vec![gs_path.clone()])
             .await?;
         let url = urls.first().unwrap();
         let bytes = reqwest::get(url).await?.bytes().await?;
 
-        let s3_key = format!("{}/{}.png", NFT_ASSET_PATH_PREFIX, work.id.clone());
+        let s3_key = format!("{}/{}.png", NFT_1155_ASSET_PATH_PREFIX, work.id.clone());
         let uploaded_url = upload_object(
             env::var("S3_USER_BUCKET").unwrap(),
             s3_key,
@@ -127,7 +136,7 @@ impl Application {
 
         let s3_key = format!(
             "{}/{}.metadata.json",
-            NFT_ASSET_PATH_PREFIX,
+            NFT_1155_ASSET_PATH_PREFIX,
             work.id.clone()
         );
         upload_object(
@@ -138,7 +147,9 @@ impl Application {
         )
         .await?;
 
-        self.ethereum_cli.mint_erc1155(work.id, amount).await?;
+        self.ethereum_cli
+            .mint_erc1155(&user, work.id, amount)
+            .await?;
 
         Ok(())
     }

@@ -9,7 +9,6 @@ use crate::graph::query::QueryRoot;
 use app::application;
 use app::dataloader;
 use app::domain::user::AuthUser;
-use app::ethereum;
 use app::internal_api;
 use app::AppError;
 use convert_case::{Case, Casing};
@@ -24,7 +23,6 @@ pub struct Context {
     pub thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader,
     pub nft_by_work_loader: dataloader::nft_by_work::Loader,
     pub internal_api: internal_api::Client,
-    pub ethereum_cli: ethereum::Client,
 }
 
 impl juniper::Context for Context {}
@@ -50,7 +48,6 @@ impl Context {
             dataloader::nft_by_work::Batcher::new_loader();
 
         let internal_api = internal_api::Client::new();
-        let ethereum_cli = ethereum::Client::new();
 
         Self {
             auth_user,
@@ -60,7 +57,6 @@ impl Context {
             thumbnail_by_work_loader,
             nft_by_work_loader,
             internal_api,
-            ethereum_cli,
         }
     }
 }
