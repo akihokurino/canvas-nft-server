@@ -1,23 +1,15 @@
-use crate::graph::enums::WorkStatus;
-
 #[derive(Debug, GraphQLInputObject)]
-pub struct CreateWorkInput {
+pub struct ImportWorkInput {
     pub file_name: String,
 }
 
 #[derive(Debug, GraphQLInputObject)]
-pub struct CreateThumbnailInput {
+pub struct ImportThumbnailInput {
     pub file_name: String,
 }
 
 #[derive(Debug, GraphQLInputObject)]
-pub struct UpdateWorkStatusInput {
-    pub id: String,
-    pub status: WorkStatus,
-}
-
-#[derive(Debug, GraphQLInputObject)]
-pub struct CreateNftInput {
+pub struct CreateNft721Input {
     pub work_id: String,
     pub thumbnail_url: String,
     pub point: i32,
@@ -42,5 +34,8 @@ pub struct BindNftToWorkInput {
 
 #[derive(Debug, GraphQLInputObject)]
 pub struct RegisterUserInput {
-    pub address: String,
+    pub email: String,
+    pub password: String,
+    pub wallet_address: String,
+    pub wallet_secret: String,
 }

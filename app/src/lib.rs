@@ -8,7 +8,9 @@ pub mod ethereum;
 pub mod internal_api;
 mod open_sea;
 
-use aws_sdk_cognitoidentityprovider::error::AdminGetUserError;
+use aws_sdk_cognitoidentityprovider::error::{
+    AdminCreateUserError, AdminGetUserError, AdminSetUserPasswordError,
+};
 use aws_sdk_dynamodb::error::{
     BatchGetItemError, DeleteItemError, GetItemError, GetItemErrorKind, PutItemError, QueryError,
     ScanError,
@@ -134,7 +136,21 @@ impl From<SdkError<SendEmailError>> for AppError {
 
 impl From<SdkError<AdminGetUserError>> for AppError {
     fn from(e: SdkError<AdminGetUserError>) -> Self {
-        let msg = format!("cognite get error: {:?}", e);
+        let msg = format!("cognito get user error: {:?}", e);
+        Self::Internal(msg)
+    }
+}
+
+impl From<SdkError<AdminCreateUserError>> for AppError {
+    fn from(e: SdkError<AdminCreateUserError>) -> Self {
+        let msg = format!("cognito create user error: {:?}", e);
+        Self::Internal(msg)
+    }
+}
+
+impl From<SdkError<AdminSetUserPasswordError>> for AppError {
+    fn from(e: SdkError<AdminSetUserPasswordError>) -> Self {
+        let msg = format!("cognito set user password error: {:?}", e);
         Self::Internal(msg)
     }
 }
@@ -143,11 +159,11 @@ impl From<jsonwebtokens_cognito::Error> for AppError {
     fn from(e: jsonwebtokens_cognito::Error) -> Self {
         match e {
             jsonwebtokens_cognito::Error::NetworkError(_) => {
-                let msg = "cognite network error".to_string();
+                let msg = "cognito network error".to_string();
                 Self::Internal(msg)
             }
             jsonwebtokens_cognito::Error::CacheMiss(_) => {
-                let msg = "cognite internal error".to_string();
+                let msg = "cognito internal error".to_string();
                 Self::Internal(msg)
             }
             _ => Self::UnAuthenticate,

@@ -24,7 +24,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
                 data.executor_id, data.prefix, data.file_name
             );
 
-            let email = cognite::get_email(data.executor_id.clone()).await?;
+            let email = cognito::get_email(data.executor_id.clone()).await?;
 
             let admin_work_app = admin::work::Application::new(data.executor_id.clone()).await;
             let res = admin_work_app
@@ -59,7 +59,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
                 data.executor_id, data.prefix, data.file_name
             );
 
-            let email = cognite::get_email(data.executor_id.clone()).await?;
+            let email = cognito::get_email(data.executor_id.clone()).await?;
 
             let admin_work_app = admin::work::Application::new(data.executor_id.clone()).await;
             let res = admin_work_app

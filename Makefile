@@ -28,7 +28,7 @@ deploy:
 	sam deploy --profile me
 
 run-local:
-	cd api && SSM_PARAMETER=/canvas-store/server/dotenv cargo run
+	cd api && SSM_PARAMETER=/canvas-nft/server/dotenv cargo run
 
 debug-set-password:
 	aws cognito-idp admin-set-user-password \
@@ -56,7 +56,7 @@ debug-token:
 
 run-sync-work:
 	aws lambda invoke \
-		--function-name canvas-store-server-BatchFunction-uxU6xWOjAZm5 \
+		--function-name canvas-nft-server-BatchFunction-uxU6xWOjAZm5 \
 		--payload '{"command":"sync-work"}' \
 		--cli-binary-format raw-in-base64-out \
 		--profile me \

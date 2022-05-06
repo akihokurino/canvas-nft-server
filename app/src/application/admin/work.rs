@@ -5,6 +5,7 @@ use crate::domain::work::{Thumbnail, Work, WorkStatus};
 use crate::AppResult;
 use crate::{ddb, internal_api, THUMBNAIL_CSV_PATH_PREFIX, WORK_CSV_PATH_PREFIX};
 use http::Uri;
+use std::collections::HashMap;
 use std::env;
 
 pub struct Application {
@@ -46,6 +47,24 @@ impl Application {
         };
 
         Ok((works, next_key.encode()))
+    }
+
+    pub async fn get_multi(&self, ids: Vec<String>) -> AppResult<Vec<Work>> {
+        let works = self.work_dao.get_multi(ids.clone()).await?;
+
+        let mut work_map: HashMap<String, Work> = HashMap::new();
+        for work in works {
+            work_map.insert(work.id.clone(), work.to_owned());
+        }
+
+        let ordered_works: Vec<Work> = ids
+            .iter()
+            .map(|v| work_map.get(v).to_owned())
+            .filter(|v| v.is_some() && v.unwrap().status == WorkStatus::Free)
+            .map(|v| v.unwrap().to_owned())
+            .collect();
+
+        Ok(ordered_works)
     }
 
     pub async fn get(&self, id: String) -> AppResult<Work> {
@@ -127,15 +146,6 @@ impl Application {
             s3::pre_sign_for_upload(env::var("S3_USER_BUCKET").unwrap(), s3_key.clone()).await?;
 
         Ok((url, uuid))
-    }
-
-    pub async fn update_status(&self, id: String, status: WorkStatus) -> AppResult<()> {
-        let mut work = self.work_dao.get(id.clone()).await?;
-        work.update_status(status)?;
-
-        self.work_dao.put(&work).await?;
-
-        Ok(())
     }
 
     pub async fn delete(&self, id: String) -> AppResult<()> {

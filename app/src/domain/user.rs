@@ -2,6 +2,8 @@ use crate::ethereum;
 
 #[derive(Clone, PartialEq)]
 pub enum AuthUser {
+    // マスターユーザー
+    Master,
     // 管理ユーザー
     Admin(String),
     // 一般ユーザー（ログイン済）
@@ -16,6 +18,13 @@ impl AuthUser {
             AuthUser::Admin(id) => Some(id.to_owned()),
             AuthUser::User(id) => Some(id.to_owned()),
             _ => None,
+        }
+    }
+
+    pub fn is_master(&self) -> bool {
+        match self {
+            AuthUser::Master => true,
+            _ => false,
         }
     }
 
@@ -37,12 +46,17 @@ impl AuthUser {
 #[derive(Clone, Debug)]
 pub struct User {
     pub id: String,
-    pub address: String,
+    pub wallet_address: String,
+    pub wallet_secret: String,
 }
 
 impl User {
-    pub fn new(id: String, address: String) -> Self {
-        Self { id, address }
+    pub fn new(id: String, address: String, secret: String) -> Self {
+        Self {
+            id,
+            wallet_address: address,
+            wallet_secret: secret,
+        }
     }
 
     pub fn with_balance(&self, balance: u128, nft_num: u128) -> UserWithBalance {
@@ -53,7 +67,7 @@ impl User {
 
         UserWithBalance {
             id: self.id.to_owned(),
-            address: self.address.to_owned(),
+            address: self.wallet_address.to_owned(),
             balance: val.parse().unwrap_or(0.0),
             nft_num,
         }

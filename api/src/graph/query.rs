@@ -13,12 +13,12 @@ pub struct QueryRoot;
 impl QueryRoot {
     async fn get_me(context: &Context) -> FieldResult<User> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_service() {
+        if !auth_user.is_admin() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         let user = context
-            .service_user_app
+            .admin_user_app
             .get_me()
             .await
             .map_err(FieldErrorWithCode::from)?;
@@ -53,66 +53,40 @@ impl QueryRoot {
         })
     }
 
-    async fn purchasable_works(
-        context: &Context,
-        next_key: Option<String>,
-        limit: Option<i32>,
-    ) -> FieldResult<WorkConnection> {
-        let (works, next_key) = match context.auth_user.to_owned() {
-            AuthUser::Admin(_) => (vec![], None),
-            _ => context
-                .service_work_app
-                .list(next_key, limit)
-                .await
-                .map_err(FieldErrorWithCode::from)?,
-        };
-
-        Ok(WorkConnection {
-            edges: works
-                .iter()
-                .map(|v| WorkEdge {
-                    node: Work::from(v.to_owned()),
-                })
-                .collect(),
-            next_key,
-            total_count: None,
-        })
-    }
-
-    async fn purchasable_works_by_ids(
-        context: &Context,
-        ids: Vec<String>,
-    ) -> FieldResult<Vec<Work>> {
+    async fn works_by_ids(context: &Context, ids: Vec<String>) -> FieldResult<Vec<Work>> {
         let works = match context.auth_user.to_owned() {
-            AuthUser::Admin(_) => vec![],
-            _ => context
-                .service_work_app
+            AuthUser::Admin(_) => context
+                .admin_work_app
                 .get_multi(ids)
                 .await
                 .map_err(FieldErrorWithCode::from)?,
+            _ => vec![],
         };
 
         Ok(works.iter().map(|v| Work::from(v.to_owned())).collect())
     }
 
     async fn work(context: &Context, id: String) -> FieldResult<Work> {
-        let work = match context.auth_user.to_owned() {
-            AuthUser::Admin(_) => context
-                .admin_work_app
-                .get(id)
-                .await
-                .map_err(FieldErrorWithCode::from)?,
-            _ => context
-                .service_work_app
-                .get(id)
-                .await
-                .map_err(FieldErrorWithCode::from)?,
-        };
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        let work = context
+            .admin_work_app
+            .get(id)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
 
         Ok(Work::from(work.to_owned()))
     }
 
     async fn owner_of_nft(context: &Context, work_id: String) -> FieldResult<String> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
         let result = context
             .ethereum_cli
             .get_erc721_owner_of(work_id)
@@ -123,6 +97,11 @@ impl QueryRoot {
     }
 
     async fn is_own_nft(context: &Context, address: String, work_id: String) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
         let result = context
             .ethereum_cli
             .is_erc721_owned(address, work_id)

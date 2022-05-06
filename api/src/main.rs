@@ -66,6 +66,12 @@ async fn graphql_route(
 }
 
 async fn authenticate(req: &HttpRequest) -> AuthUser {
+    if let Some(token) = get_into::<String>(req.headers(), "x-master-token") {
+        if token == env::var("INTERNAL_TOKEN").unwrap() {
+            return AuthUser::Master;
+        }
+    }
+
     if let Some(id) = get_into(req.headers(), "x-admin-id") {
         return AuthUser::Admin(id);
     }
@@ -79,7 +85,7 @@ async fn authenticate(req: &HttpRequest) -> AuthUser {
         return AuthUser::None;
     }
 
-    let result = app::aws::cognite::verify_token(&token[7..]).await;
+    let result = app::aws::cognito::verify_token(&token[7..]).await;
     if let Err(_e) = result {
         return AuthUser::None;
     }

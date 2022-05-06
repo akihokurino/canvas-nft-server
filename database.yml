@@ -2,19 +2,6 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: DynamoDB
 
 Resources:
-  DDBUserTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: canvas-nft-user
-      AttributeDefinitions:
-        - AttributeName: ID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: ID
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
   DDBWorkTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -38,8 +25,8 @@ Resources:
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
-            ReadCapacityUnits: 3
-            WriteCapacityUnits: 3
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
   DDBThumbnailTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -75,6 +62,31 @@ Resources:
               KeyType: HASH
             - AttributeName: Order
               KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+  DDBUserTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: canvas-nft-user
+      AttributeDefinitions:
+        - AttributeName: ID
+          AttributeType: S
+        - AttributeName: WalletAddress
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      GlobalSecondaryIndexes:
+        - IndexName: WalletAddress-Index
+          KeySchema:
+            - AttributeName: WalletAddress
+              KeyType: HASH
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:

@@ -1,8 +1,7 @@
 use crate::graph::inputs::{
-    BindNftToWorkInput, CreateNft1155Input, CreateNftInput, CreateThumbnailInput, CreateWorkInput,
-    RegisterUserInput, UpdateWorkStatusInput,
+    BindNftToWorkInput, CreateNft1155Input, CreateNft721Input, ImportThumbnailInput,
+    ImportWorkInput, RegisterUserInput,
 };
-use crate::graph::outputs::user::User;
 use crate::graph::outputs::PreSignUploadUrl;
 use crate::graph::Context;
 use crate::graph::FieldErrorWithCode;
@@ -13,24 +12,33 @@ pub struct MutationRoot;
 
 #[juniper::graphql_object(Context = Context)]
 impl MutationRoot {
-    async fn register_user(context: &Context, input: RegisterUserInput) -> FieldResult<User> {
+    async fn debug(_context: &Context) -> FieldResult<bool> {
+        Ok(true)
+    }
+
+    async fn register_user(context: &Context, input: RegisterUserInput) -> FieldResult<String> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_service() {
+        if !auth_user.is_master() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
-        let user = context
-            .service_user_app
-            .register(input.address)
+        let user_id = context
+            .admin_user_app
+            .register(
+                input.email,
+                input.password,
+                input.wallet_address,
+                input.wallet_secret,
+            )
             .await
             .map_err(FieldErrorWithCode::from)?;
 
-        Ok(User::from(user))
+        Ok(user_id.to_owned())
     }
 
-    async fn create_work(context: &Context, input: CreateWorkInput) -> FieldResult<bool> {
+    async fn import_work(context: &Context, input: ImportWorkInput) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_master() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
@@ -47,9 +55,9 @@ impl MutationRoot {
         Ok(true)
     }
 
-    async fn create_thumbnail(context: &Context, input: CreateThumbnailInput) -> FieldResult<bool> {
+    async fn import_thumbnail(context: &Context, input: ImportThumbnailInput) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_master() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
@@ -68,7 +76,7 @@ impl MutationRoot {
 
     async fn pre_sign_upload_work(context: &Context) -> FieldResult<PreSignUploadUrl> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_master() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
@@ -85,7 +93,7 @@ impl MutationRoot {
 
     async fn pre_sign_upload_thumbnail(context: &Context) -> FieldResult<PreSignUploadUrl> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_master() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
@@ -100,25 +108,7 @@ impl MutationRoot {
         })
     }
 
-    async fn update_work_status(
-        context: &Context,
-        input: UpdateWorkStatusInput,
-    ) -> FieldResult<bool> {
-        let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
-            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
-        }
-
-        context
-            .admin_work_app
-            .update_status(input.id, input.status.domain())
-            .await
-            .map_err(FieldErrorWithCode::from)?;
-
-        Ok(true)
-    }
-
-    async fn create_nft(context: &Context, input: CreateNftInput) -> FieldResult<bool> {
+    async fn create_nft_721(context: &Context, input: CreateNft721Input) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
         if !auth_user.is_admin() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
