@@ -101,6 +101,13 @@ Resources:
             Enabled: true
             Input: '{"command":"sync-work"}'
             Schedule: 'cron(0 12 * * ? *)'
+        SyncNFTAsset:
+          Type: Schedule
+          Properties:
+            Description: ''
+            Enabled: true
+            Input: '{"command":"sync-nft-asset"}'
+            Schedule: 'rate(1 hour)'
       Environment:
         Variables:
           SSM_PARAMETER: !Ref SsmParameter

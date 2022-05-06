@@ -3,6 +3,7 @@ ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 DEBUG_EMAIL := ""
 COGNITO_SESSION := ""
+BATCH_COMMAND := "sync-work"
 
 clean:
 	cargo clean
@@ -30,6 +31,14 @@ deploy:
 run-local:
 	cd api && SSM_PARAMETER=/canvas-nft/server/dotenv cargo run
 
+run-batch:
+	aws lambda invoke \
+		--function-name canvas-nft-server-BatchFunction-Yiw850yJa7oH \
+		--payload '{"command":"${BATCH_COMMAND}"}' \
+		--cli-binary-format raw-in-base64-out \
+		--profile me \
+		/dev/null
+
 debug-set-password:
 	aws cognito-idp admin-set-user-password \
         --user-pool-id ap-northeast-1_omBvnPYzl \
@@ -53,11 +62,3 @@ debug-token:
         --auth-flow ADMIN_NO_SRP_AUTH \
         --auth-parameters USERNAME=${DEBUG_EMAIL},PASSWORD=Test1234 \
         --profile me
-
-run-sync-work:
-	aws lambda invoke \
-		--function-name canvas-nft-server-BatchFunction-Yiw850yJa7oH \
-		--payload '{"command":"sync-work"}' \
-		--cli-binary-format raw-in-base64-out \
-		--profile me \
-		/dev/null
