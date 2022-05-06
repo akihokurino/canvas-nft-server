@@ -143,7 +143,7 @@ impl Application {
         Ok(())
     }
 
-    pub async fn bind_work(
+    pub async fn sync_status(
         &self,
         id: String,
         contract_address: String,

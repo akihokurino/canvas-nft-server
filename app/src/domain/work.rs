@@ -9,7 +9,8 @@ use strum_macros::EnumString;
 #[derive(PartialEq, Clone, Debug, StrumDisplay, EnumString)]
 pub enum WorkStatus {
     Prepare,
-    Free,
+    PublishNFT,
+    SellOrder,
 }
 
 impl WorkStatus {

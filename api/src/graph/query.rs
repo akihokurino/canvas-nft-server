@@ -11,7 +11,7 @@ pub struct QueryRoot;
 
 #[juniper::graphql_object(Context = Context)]
 impl QueryRoot {
-    async fn get_me(context: &Context) -> FieldResult<User> {
+    async fn me(context: &Context) -> FieldResult<User> {
         let auth_user = context.auth_user.to_owned();
         if !auth_user.is_admin() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
@@ -81,7 +81,7 @@ impl QueryRoot {
         Ok(Work::from(work.to_owned()))
     }
 
-    async fn owner_of_nft(context: &Context, work_id: String) -> FieldResult<String> {
+    async fn owner_of_nft721(context: &Context, work_id: String) -> FieldResult<String> {
         let auth_user = context.auth_user.to_owned();
         if !auth_user.is_admin() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
@@ -96,7 +96,11 @@ impl QueryRoot {
         Ok(result)
     }
 
-    async fn is_own_nft(context: &Context, address: String, work_id: String) -> FieldResult<bool> {
+    async fn is_own_nft721(
+        context: &Context,
+        address: String,
+        work_id: String,
+    ) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
         if !auth_user.is_admin() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());

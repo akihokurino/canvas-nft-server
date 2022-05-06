@@ -2,8 +2,8 @@ use crate::aws::s3;
 use crate::aws::s3::upload_object;
 use crate::csv_loader::load_from_csv;
 use crate::domain::work::{Thumbnail, Work, WorkStatus};
-use crate::AppResult;
 use crate::{ddb, internal_api, THUMBNAIL_CSV_PATH_PREFIX, WORK_CSV_PATH_PREFIX};
+use crate::{AppError, AppResult};
 use http::Uri;
 use std::collections::HashMap;
 use std::env;
@@ -60,7 +60,7 @@ impl Application {
         let ordered_works: Vec<Work> = ids
             .iter()
             .map(|v| work_map.get(v).to_owned())
-            .filter(|v| v.is_some() && v.unwrap().status == WorkStatus::Free)
+            .filter(|v| v.is_some() && v.unwrap().status == WorkStatus::PublishNFT)
             .map(|v| v.unwrap().to_owned())
             .collect();
 
@@ -93,6 +93,17 @@ impl Application {
         .await?;
         let works = load_from_csv::<Work>(bytes, None)?;
         for work in works {
+            let current = self.work_dao.get(work.id).await;
+            if let Ok(mut w) = current {
+                w.video_path = work.video_path;
+                self.work_dao.put(&w).await?;
+                continue;
+            }
+            if let Err(err) = user {
+                if err != AppError::NotFound {
+                    return Err(err);
+                }
+            }
             self.work_dao.put(&work).await?;
         }
 
@@ -120,6 +131,17 @@ impl Application {
 
         let works = load_from_csv::<Work>(s3_data, None)?;
         for work in works {
+            let current = self.work_dao.get(work.id).await;
+            if let Ok(mut w) = current {
+                w.video_path = work.video_path;
+                self.work_dao.put(&w).await?;
+                continue;
+            }
+            if let Err(err) = user {
+                if err != AppError::NotFound {
+                    return Err(err);
+                }
+            }
             self.work_dao.put(&work).await?;
         }
 
