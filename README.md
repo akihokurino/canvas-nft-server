@@ -34,3 +34,7 @@
 
 ## OpenSea
 https://testnets.opensea.io/Akiho-Dev1
+
+## Architecture
+
+![frame](https://user-images.githubusercontent.com/2268288/167145770-5a75ee35-b51f-491e-ad58-c9848e58de1d.png)
