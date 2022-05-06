@@ -13,16 +13,16 @@ impl User {
         self.data.id.to_owned()
     }
 
-    fn address(&self) -> String {
-        self.data.address.to_owned()
+    fn wallet_address(&self) -> String {
+        self.data.wallet_address.to_owned()
     }
 
     fn balance(&self) -> f64 {
         self.data.balance.to_owned()
     }
 
-    fn nft_num(&self) -> i32 {
-        TryFrom::try_from(self.data.nft_num.to_owned()).unwrap_or_default()
+    fn nft_721_num(&self) -> i32 {
+        TryFrom::try_from(self.data.nft_721_num.to_owned()).unwrap_or_default()
     }
 }
 

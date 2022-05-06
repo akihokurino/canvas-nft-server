@@ -1,6 +1,7 @@
 mod erc1155;
 pub mod erc721;
 pub mod unit;
+mod wallet;
 
 use std::env;
 use web3::types::Address;

@@ -43,7 +43,7 @@ Resources:
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
+        WriteCapacityUnits: 8
       GlobalSecondaryIndexes:
         - IndexName: ID-Order-Index
           KeySchema:
@@ -55,7 +55,7 @@ Resources:
             ProjectionType: ALL
           ProvisionedThroughput:
             ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
+            WriteCapacityUnits: 8
         - IndexName: WorkID-Order-Index
           KeySchema:
             - AttributeName: WorkID
@@ -66,7 +66,7 @@ Resources:
             ProjectionType: ALL
           ProvisionedThroughput:
             ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
+            WriteCapacityUnits: 8
   DDBUserTable:
     Type: AWS::DynamoDB::Table
     Properties:

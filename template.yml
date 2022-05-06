@@ -13,7 +13,7 @@ Parameters:
     Description: ssm parameter path
 #  DomainName:
 #    Type: String
-#    Default: sample.akiho.app
+#    Default: canvas-nft.akiho.app
 #    Description: api service domain name
 #  HostedZoneName:
 #    Type: String

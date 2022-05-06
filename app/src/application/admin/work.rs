@@ -72,7 +72,7 @@ impl Application {
         Ok(work)
     }
 
-    pub async fn sync_work_thumbnail(&self) -> AppResult<()> {
+    pub async fn sync_work_with_thumbnail(&self) -> AppResult<()> {
         let urls = self
             .internal_api
             .get_signed_urls(vec![

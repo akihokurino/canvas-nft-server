@@ -56,7 +56,7 @@ debug-token:
 
 run-sync-work:
 	aws lambda invoke \
-		--function-name canvas-nft-server-BatchFunction-uxU6xWOjAZm5 \
+		--function-name canvas-nft-server-BatchFunction-Yiw850yJa7oH \
 		--payload '{"command":"sync-work"}' \
 		--cli-binary-format raw-in-base64-out \
 		--profile me \

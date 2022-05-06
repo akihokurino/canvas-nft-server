@@ -2,8 +2,8 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "canvas-store-server"
-s3_bucket = "canvas-store-artifact"
+stack_name = "canvas-nft-server"
+s3_bucket = "canvas-nft-artifact"
 s3_prefix = "canvas-store"
 region = "ap-northeast-1"
 confirm_changeset = false

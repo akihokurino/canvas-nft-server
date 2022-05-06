@@ -19,7 +19,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
     if command == "sync-work" {
         let admin_work_app = admin::work::Application::new("batch".to_string()).await;
         admin_work_app
-            .sync_work_thumbnail()
+            .sync_work_with_thumbnail()
             .await
             .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)))?;
     }

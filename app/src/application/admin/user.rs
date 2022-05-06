@@ -26,7 +26,7 @@ impl Application {
         let user = self.user_dao.get(self.me_id.clone()).await?;
         let balance = self
             .ethereum_cli
-            .get_erc721_balance(user.wallet_address.clone())
+            .get_balance(user.wallet_address.clone())
             .await?;
         let nft_balance = self
             .ethereum_cli

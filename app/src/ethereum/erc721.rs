@@ -8,15 +8,6 @@ use web3::signing::SecretKeyRef;
 use web3::types::{Address, U256};
 
 impl Client {
-    pub async fn get_erc721_balance(&self, address: String) -> AppResult<u128> {
-        let balance = self
-            .cli
-            .eth()
-            .balance(self.parse_address(address).unwrap(), None)
-            .await?;
-        Ok(balance.as_u128())
-    }
-
     pub async fn get_erc721_nft_name(&self) -> AppResult<String> {
         let contract_address =
             env::var("NFT_CONTRACT_ADDRESS").expect("should set contract address");
