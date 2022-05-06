@@ -9,7 +9,7 @@
 - api gateway
 - route53
 - certificate manager
-- cognite
+- cognito
 - ssm
 - ses
 - sns
@@ -20,18 +20,17 @@
 - rust-web3 ( https://github.com/tomusdrw/rust-web3 )
 
 ## Done
-- upload csv and register work in sns
-- sync work in batch
-- register work as nft to opensea（use my erc721 token）
+- upload csv and register video, image in sns
+- sync video, image in batch
+- register nft to opensea（support erc721, erc1155）
 - get nft info from opensea
-- get erc721 token info from ethereum
 - get my balance of ether
 
-## ERC721
-https://github.com/akihokurino/ethereum-erc721-nft
-
-## ERC1155
-https://github.com/akihokurino/ethereum-erc1155-nft
+## Related
+- https://github.com/akihokurino/canvas-ios
+- https://github.com/akihokurino/canvas-server
+- https://github.com/akihokurino/ethereum-erc721-nft
+- https://github.com/akihokurino/ethereum-erc1155-nft
 
 ## OpenSea
 https://testnets.opensea.io/Akiho-Dev1
