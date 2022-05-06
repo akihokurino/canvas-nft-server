@@ -38,3 +38,7 @@ https://testnets.opensea.io/Akiho-Dev1
 ## Architecture
 
 ![frame](https://user-images.githubusercontent.com/2268288/167145770-5a75ee35-b51f-491e-ad58-c9848e58de1d.png)
+
+## Images
+
+<img width="900" alt="スクリーンショット 2021-11-26 22 20 48" src="https://user-images.githubusercontent.com/2268288/143587631-75daf147-1169-40ea-a26b-ed930dd5456b.png">
