@@ -1,4 +1,5 @@
 use crate::aws::s3::upload_object;
+use crate::aws::sns;
 use crate::domain::asset::{Asset1155, Asset721};
 use crate::domain::user::User;
 use crate::domain::work::{Work, WorkStatus};
@@ -44,15 +45,14 @@ impl Application {
         }
     }
 
-    pub async fn create_erc721(
+    pub async fn prepare_erc721(
         &self,
-        id: String,
+        work_id: String,
         gs_path: String,
         point: i32,
         level: i32,
     ) -> AppResult<()> {
-        let user = self.user_dao.get(self.me_id.clone()).await?;
-        let mut work = self.work_dao.get(id.clone()).await?;
+        let work = self.work_dao.get(work_id.clone()).await?;
 
         let urls = self
             .internal_api
@@ -92,11 +92,28 @@ impl Application {
         )
         .await?;
 
+        let asset = Asset721::new(work.id.clone());
+        self.asset721_dao.put(&asset).await?;
+
+        let payload = sns::MintNft721Payload {
+            executor_id: self.me_id.clone(),
+            work_id: work.id.clone(),
+        };
+
+        sns::publish(sns::Task::MintNFT721(payload)).await?;
+
+        Ok(())
+    }
+
+    pub async fn mint_erc721(&self, work_id: String) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
+        let mut work = self.work_dao.get(work_id.clone()).await?;
+
         self.ethereum_cli
-            .mint_erc721(&user, work.id.clone())
+            .mint_erc721(&user, work_id.clone())
             .await?;
 
-        self.save_asset721(work.id.clone()).await?;
+        self.save_asset721(work_id.clone()).await?;
 
         work.status = WorkStatus::PublishNFT;
         self.work_dao.put(&work).await?;
@@ -104,16 +121,15 @@ impl Application {
         Ok(())
     }
 
-    pub async fn create_erc1155(
+    pub async fn prepare_erc1155(
         &self,
-        id: String,
+        work_id: String,
         gs_path: String,
         point: i32,
         level: i32,
         amount: u32,
     ) -> AppResult<()> {
-        let user = self.user_dao.get(self.me_id.clone()).await?;
-        let mut work = self.work_dao.get(id.clone()).await?;
+        let work = self.work_dao.get(work_id.clone()).await?;
 
         let urls = self
             .internal_api
@@ -153,11 +169,29 @@ impl Application {
         )
         .await?;
 
+        let asset = Asset1155::new(work.id.clone());
+        self.asset1155_dao.put(&asset).await?;
+
+        let payload = sns::MintNft1155Payload {
+            executor_id: self.me_id.clone(),
+            work_id: work.id.clone(),
+            amount: amount.to_owned(),
+        };
+
+        sns::publish(sns::Task::MintNFT1155(payload)).await?;
+
+        Ok(())
+    }
+
+    pub async fn mint_erc1155(&self, work_id: String, amount: u32) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
+        let mut work = self.work_dao.get(work_id.clone()).await?;
+
         self.ethereum_cli
-            .mint_erc1155(&user, work.id.clone(), amount)
+            .mint_erc1155(&user, work_id.clone(), amount)
             .await?;
 
-        self.save_asset1155(work.id.clone()).await?;
+        self.save_asset1155(work_id.clone()).await?;
 
         work.status = WorkStatus::PublishNFT;
         self.work_dao.put(&work).await?;
@@ -180,8 +214,8 @@ impl Application {
             })
             .await?;
 
-        let asset = Asset721::new(
-            work_id.clone(),
+        let mut updated = self.asset721_dao.get(work_id.clone()).await?;
+        updated.published(
             contract_address.clone(),
             token_id.clone().to_string(),
             asset.name,
@@ -191,7 +225,7 @@ impl Application {
             asset.permalink,
         );
 
-        self.asset721_dao.put(&asset).await?;
+        self.asset721_dao.put(&updated).await?;
 
         Ok(())
     }
@@ -211,8 +245,8 @@ impl Application {
             })
             .await?;
 
-        let asset = Asset1155::new(
-            work_id.clone(),
+        let mut updated = self.asset1155_dao.get(work_id.clone()).await?;
+        updated.published(
             contract_address.clone(),
             token_id.clone().to_string(),
             asset.name,
@@ -221,7 +255,8 @@ impl Application {
             asset.image_preview_url,
             asset.permalink,
         );
-        self.asset1155_dao.put(&asset).await?;
+
+        self.asset1155_dao.put(&updated).await?;
 
         Ok(())
     }

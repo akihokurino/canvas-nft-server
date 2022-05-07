@@ -115,7 +115,7 @@ impl MutationRoot {
 
         context
             .admin_nft_app
-            .create_erc721(input.work_id, input.gs_path, input.point, input.level)
+            .prepare_erc721(input.work_id, input.gs_path, input.point, input.level)
             .await
             .map_err(FieldErrorWithCode::from)?;
 
@@ -130,7 +130,7 @@ impl MutationRoot {
 
         context
             .admin_nft_app
-            .create_erc1155(
+            .prepare_erc1155(
                 input.work_id,
                 input.gs_path,
                 input.point,

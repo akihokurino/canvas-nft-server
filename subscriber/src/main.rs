@@ -88,6 +88,78 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
 
             println!("success create thumbnail");
         }
+        sns::Task::MintNFT721(data) => {
+            println!(
+                "mint 721 token, executor_id: {}, work_id: {}",
+                data.executor_id,
+                data.work_id.clone()
+            );
+
+            let email = cognito::get_email(data.executor_id.clone()).await?;
+
+            let admin_nft_app = admin::nft::Application::new(data.executor_id.clone()).await;
+            let res = admin_nft_app
+                .mint_erc721(data.work_id.clone())
+                .await
+                .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)));
+
+            if let Err(e) = res {
+                ses::send(
+                    email,
+                    "ERC721の発行に失敗しました".to_string(),
+                    format!("失敗しました。\n{:?}", e).to_string(),
+                )
+                .await
+                .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)))?;
+                return Err(e.into());
+            }
+
+            ses::send(
+                email,
+                "ERC721の発行に成功しました".to_string(),
+                "成功しました。".to_string(),
+            )
+            .await
+            .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)))?;
+
+            println!("success mint 721 token");
+        }
+        sns::Task::MintNFT1155(data) => {
+            println!(
+                "mint 1155 token, executor_id: {}, work_id: {}",
+                data.executor_id,
+                data.work_id.clone()
+            );
+
+            let email = cognito::get_email(data.executor_id.clone()).await?;
+
+            let admin_nft_app = admin::nft::Application::new(data.executor_id.clone()).await;
+            let res = admin_nft_app
+                .mint_erc1155(data.work_id.clone(), data.amount.clone())
+                .await
+                .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)));
+
+            if let Err(e) = res {
+                ses::send(
+                    email,
+                    "ERC1155の発行に失敗しました".to_string(),
+                    format!("失敗しました。\n{:?}", e).to_string(),
+                )
+                .await
+                .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)))?;
+                return Err(e.into());
+            }
+
+            ses::send(
+                email,
+                "ERC1155の発行に成功しました".to_string(),
+                "成功しました。".to_string(),
+            )
+            .await
+            .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)))?;
+
+            println!("success mint 721 token");
+        }
     };
 
     Ok(())

@@ -13,8 +13,23 @@ pub struct Asset721 {
 }
 
 impl Asset721 {
-    pub fn new(
-        work_id: String,
+    pub fn new(work_id: String) -> Self {
+        Self {
+            work_id,
+            contract_address: "".to_string(),
+            token_id: "".to_string(),
+            name: "".to_string(),
+            description: "".to_string(),
+            image_url: "".to_string(),
+            image_preview_url: "".to_string(),
+            permalink: "".to_string(),
+            usd_price: 0.0,
+            eth_price: 0.0,
+        }
+    }
+
+    pub fn published(
+        &mut self,
         contract_address: String,
         token_id: String,
         name: String,
@@ -22,19 +37,14 @@ impl Asset721 {
         image_url: String,
         image_preview_url: String,
         permalink: String,
-    ) -> Self {
-        Self {
-            work_id,
-            contract_address,
-            token_id,
-            name,
-            description,
-            image_url,
-            image_preview_url,
-            permalink,
-            usd_price: 0.0,
-            eth_price: 0.0,
-        }
+    ) {
+        self.contract_address = contract_address;
+        self.token_id = token_id;
+        self.name = name;
+        self.description = description;
+        self.image_url = image_url;
+        self.image_preview_url = image_preview_url;
+        self.permalink = permalink;
     }
 }
 
@@ -53,8 +63,23 @@ pub struct Asset1155 {
 }
 
 impl Asset1155 {
-    pub fn new(
-        work_id: String,
+    pub fn new(work_id: String) -> Self {
+        Self {
+            work_id,
+            contract_address: "".to_string(),
+            token_id: "".to_string(),
+            name: "".to_string(),
+            description: "".to_string(),
+            image_url: "".to_string(),
+            image_preview_url: "".to_string(),
+            permalink: "".to_string(),
+            usd_price: 0.0,
+            eth_price: 0.0,
+        }
+    }
+
+    pub fn published(
+        &mut self,
         contract_address: String,
         token_id: String,
         name: String,
@@ -62,18 +87,13 @@ impl Asset1155 {
         image_url: String,
         image_preview_url: String,
         permalink: String,
-    ) -> Self {
-        Self {
-            work_id,
-            contract_address,
-            token_id,
-            name,
-            description,
-            image_url,
-            image_preview_url,
-            permalink,
-            usd_price: 0.0,
-            eth_price: 0.0,
-        }
+    ) {
+        self.contract_address = contract_address;
+        self.token_id = token_id;
+        self.name = name;
+        self.description = description;
+        self.image_url = image_url;
+        self.image_preview_url = image_preview_url;
+        self.permalink = permalink;
     }
 }

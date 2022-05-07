@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub enum Task {
     CreateWork(CreateWorkPayload),
     CreateThumbnail(CreateThumbnailPayload),
+    MintNFT721(MintNft721Payload),
+    MintNFT1155(MintNft1155Payload),
 }
 
 impl Task {
@@ -12,6 +14,8 @@ impl Task {
         match self {
             Task::CreateWork(_) => 1,
             Task::CreateThumbnail(_) => 2,
+            Task::MintNFT721(_) => 3,
+            Task::MintNFT1155(_) => 4,
         }
     }
 
@@ -19,6 +23,8 @@ impl Task {
         match self {
             Task::CreateWork(data) => serde_json::to_string(data).map_err(AppError::from),
             Task::CreateThumbnail(data) => serde_json::to_string(data).map_err(AppError::from),
+            Task::MintNFT721(data) => serde_json::to_string(data).map_err(AppError::from),
+            Task::MintNFT1155(data) => serde_json::to_string(data).map_err(AppError::from),
         }
     }
 
@@ -29,13 +35,19 @@ impl Task {
         } else if raw_number == 2 {
             let payload: CreateThumbnailPayload = serde_json::from_str(raw_message.as_str())?;
             Ok(Task::CreateThumbnail(payload))
+        } else if raw_number == 3 {
+            let payload: MintNft721Payload = serde_json::from_str(raw_message.as_str())?;
+            Ok(Task::MintNFT721(payload))
+        } else if raw_number == 4 {
+            let payload: MintNft1155Payload = serde_json::from_str(raw_message.as_str())?;
+            Ok(Task::MintNFT1155(payload))
         } else {
             Err(AppError::BadRequest("不明なタスクです".to_string()))
         }
     }
 
     pub fn topic_arn(&self) -> String {
-        "arn:aws:sns:ap-northeast-1:326914400610:canvas-store-topic".to_string()
+        "arn:aws:sns:ap-northeast-1:326914400610:canvas-nft-topic".to_string()
     }
 }
 
@@ -51,6 +63,19 @@ pub struct CreateThumbnailPayload {
     pub executor_id: String,
     pub prefix: String,
     pub file_name: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MintNft721Payload {
+    pub executor_id: String,
+    pub work_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MintNft1155Payload {
+    pub executor_id: String,
+    pub work_id: String,
+    pub amount: u32,
 }
 
 pub async fn publish(task: Task) -> AppResult<()> {
