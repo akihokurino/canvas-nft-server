@@ -32,3 +32,9 @@ pub struct RegisterUserInput {
     pub wallet_address: String,
     pub wallet_secret: String,
 }
+
+#[derive(Debug, GraphQLInputObject)]
+pub struct SellNftInput {
+    pub work_id: String,
+    pub ether: f64,
+}

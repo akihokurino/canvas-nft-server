@@ -1,5 +1,6 @@
 use crate::graph::inputs::{
-    CreateNft1155Input, CreateNft721Input, ImportThumbnailInput, ImportWorkInput, RegisterUserInput,
+    CreateNft1155Input, CreateNft721Input, ImportThumbnailInput, ImportWorkInput,
+    RegisterUserInput, SellNftInput,
 };
 use crate::graph::outputs::PreSignUploadUrl;
 use crate::graph::Context;
@@ -11,10 +12,6 @@ pub struct MutationRoot;
 
 #[juniper::graphql_object(Context = Context)]
 impl MutationRoot {
-    async fn debug(_context: &Context) -> FieldResult<bool> {
-        Ok(true)
-    }
-
     async fn register_user(context: &Context, input: RegisterUserInput) -> FieldResult<String> {
         let auth_user = context.auth_user.to_owned();
         if !auth_user.is_master() {
@@ -152,6 +149,36 @@ impl MutationRoot {
         context
             .admin_work_app
             .delete(id)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn sell_nft_721(context: &Context, input: SellNftInput) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .admin_nft_app
+            .sell_721(input.work_id, input.ether)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn sell_nft_1155(context: &Context, input: SellNftInput) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .admin_nft_app
+            .sell_1155(input.work_id, input.ether)
             .await
             .map_err(FieldErrorWithCode::from)?;
 

@@ -1,5 +1,5 @@
 use crate::aws::s3::upload_object;
-use crate::aws::sns;
+use crate::aws::{lambda, sns};
 use crate::domain::asset::{Asset1155, Asset721};
 use crate::domain::user::User;
 use crate::domain::work::{Work, WorkStatus};
@@ -299,6 +299,48 @@ impl Application {
             work.status = WorkStatus::PublishNFT;
             self.work_dao.put(&work).await?;
         }
+
+        Ok(())
+    }
+
+    pub async fn sell_721(&self, work_id: String, ether: f64) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
+
+        let contract_address =
+            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+        let token_id = self
+            .ethereum_cli
+            .get_erc721_token_id_of(work_id.clone())
+            .await?;
+
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell(
+            user,
+            contract_address,
+            token_id.to_string(),
+            ether,
+        ))
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn sell_1155(&self, work_id: String, ether: f64) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
+
+        let contract_address =
+            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+        let token_id = self
+            .ethereum_cli
+            .get_erc1155_token_id_of(work_id.clone())
+            .await?;
+
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell(
+            user,
+            contract_address,
+            token_id.to_string(),
+            ether,
+        ))
+        .await?;
 
         Ok(())
     }
