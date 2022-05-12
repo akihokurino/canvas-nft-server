@@ -386,4 +386,57 @@ impl Application {
 
         Ok(())
     }
+
+    pub async fn is_own_721(&self, work_id: String) -> AppResult<bool> {
+        let contract_address =
+            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+        let token_id = self
+            .ethereum_cli
+            .get_erc721_token_id_of(work_id.clone())
+            .await?;
+
+        if token_id == 0 {
+            return Ok(false);
+        }
+
+        self.is_own(contract_address, token_id).await
+    }
+
+    pub async fn is_own_1155(&self, work_id: String) -> AppResult<bool> {
+        let contract_address =
+            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+        let token_id = self
+            .ethereum_cli
+            .get_erc1155_token_id_of(work_id.clone())
+            .await?;
+
+        if token_id == 0 {
+            return Ok(false);
+        }
+
+        self.is_own(contract_address, token_id).await
+    }
+
+    async fn is_own(&self, contract_address: String, token_id: u128) -> AppResult<bool> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
+
+        let asset = self
+            .open_sea_cli
+            .get_asset(open_sea::api::get_asset::Input {
+                address: contract_address.clone(),
+                token_id: token_id.clone().to_string(),
+            })
+            .await?;
+
+        for item in asset.top_ownerships {
+            if self
+                .ethereum_cli
+                .equal_address(item.owner.address, user.wallet_address.clone())
+            {
+                return Ok(true);
+            }
+        }
+
+        Ok(false)
+    }
 }

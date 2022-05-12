@@ -50,6 +50,7 @@ pub mod get_asset {
         pub description: String,
         pub permalink: String,
         pub collection: Collection,
+        pub top_ownerships: Vec<Owner>,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -62,5 +63,15 @@ pub mod get_asset {
         pub symbol: Option<String>,
         pub eth_price: Option<f64>,
         pub usd_price: Option<f64>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct Owner {
+        pub owner: User,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct User {
+        pub address: String,
     }
 }

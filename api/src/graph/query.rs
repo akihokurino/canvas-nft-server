@@ -1,11 +1,13 @@
 use crate::graph::enums::WorkStatus;
 use crate::graph::outputs::user::User;
 use crate::graph::outputs::work::{Work, WorkConnection, WorkEdge};
+use crate::graph::outputs::OwnNft;
 use crate::graph::Context;
 use crate::graph::FieldErrorWithCode;
 use crate::AuthUser;
 use app::AppError;
 use juniper::FieldResult;
+use std::{thread, time};
 
 pub struct QueryRoot;
 
@@ -79,5 +81,32 @@ impl QueryRoot {
             .map_err(FieldErrorWithCode::from)?;
 
         Ok(Work::from(work.to_owned()))
+    }
+
+    async fn own_nft(context: &Context, work_id: String) -> FieldResult<OwnNft> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        let is_own_erc721 = context
+            .admin_nft_app
+            .is_own_721(work_id.clone())
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        let ten_millis = time::Duration::from_millis(1000);
+        thread::sleep(ten_millis);
+
+        let is_own_erc1155 = context
+            .admin_nft_app
+            .is_own_1155(work_id.clone())
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(OwnNft {
+            erc721: is_own_erc721,
+            erc1155: is_own_erc1155,
+        })
     }
 }

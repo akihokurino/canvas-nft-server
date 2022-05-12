@@ -7,3 +7,9 @@ pub struct PreSignUploadUrl {
     pub url: String,
     pub file_name: String,
 }
+
+#[derive(Debug, GraphQLObject)]
+pub struct OwnNft {
+    pub erc721: bool,
+    pub erc1155: bool,
+}

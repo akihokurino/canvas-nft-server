@@ -29,4 +29,15 @@ impl Client {
             Err(_e) => None,
         }
     }
+
+    pub fn equal_address(&self, a: String, b: String) -> bool {
+        let a1 = self.parse_address(a);
+        let b1 = self.parse_address(b);
+
+        if a1.is_none() || b1.is_none() {
+            return false;
+        }
+
+        return a1.unwrap() == b1.unwrap();
+    }
 }
