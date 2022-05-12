@@ -16,6 +16,7 @@ use aws_sdk_dynamodb::error::{
     ScanError,
 };
 use aws_sdk_dynamodb::types::SdkError;
+use aws_sdk_lambda::error::InvokeError;
 use aws_sdk_s3::error::{GetObjectError, GetObjectErrorKind, PutObjectError};
 use aws_sdk_sesv2::error::SendEmailError;
 use aws_sdk_sns::error::PublishError;
@@ -92,6 +93,13 @@ impl From<SdkError<BatchGetItemError>> for AppError {
 impl From<SdkError<DeleteItemError>> for AppError {
     fn from(e: SdkError<DeleteItemError>) -> Self {
         let msg = format!("database delete error: {:?}", e);
+        Self::Internal(msg)
+    }
+}
+
+impl From<SdkError<InvokeError>> for AppError {
+    fn from(e: SdkError<InvokeError>) -> Self {
+        let msg = format!("lambda invoke error: {:?}", e);
         Self::Internal(msg)
     }
 }

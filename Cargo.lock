@@ -325,6 +325,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-cognitoidentityprovider",
  "aws-sdk-dynamodb",
+ "aws-sdk-lambda",
  "aws-sdk-s3",
  "aws-sdk-sesv2",
  "aws-sdk-sns",
@@ -628,6 +629,28 @@ dependencies = [
  "aws-types",
  "bytes",
  "fastrand",
+ "http",
+ "tokio-stream",
+ "tower",
+]
+
+[[package]]
+name = "aws-sdk-lambda"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72d7faff830fb1dcb701b369723a874abd1086906f79ae2aa34d23345d9fcae9"
+dependencies = [
+ "aws-endpoint",
+ "aws-http",
+ "aws-sig-auth",
+ "aws-smithy-async",
+ "aws-smithy-client",
+ "aws-smithy-http",
+ "aws-smithy-http-tower",
+ "aws-smithy-json",
+ "aws-smithy-types",
+ "aws-types",
+ "bytes",
  "http",
  "tokio-stream",
  "tower",
