@@ -38,3 +38,9 @@ pub struct SellNftInput {
     pub work_id: String,
     pub ether: f64,
 }
+
+#[derive(Debug, GraphQLInputObject)]
+pub struct TransferNftInput {
+    pub work_id: String,
+    pub to_address: String,
+}

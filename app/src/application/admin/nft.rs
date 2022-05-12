@@ -344,4 +344,46 @@ impl Application {
 
         Ok(())
     }
+
+    pub async fn transfer_721(&self, work_id: String, to_address: String) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
+
+        let contract_address =
+            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+        let token_id = self
+            .ethereum_cli
+            .get_erc721_token_id_of(work_id.clone())
+            .await?;
+
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::transfer_721(
+            user,
+            contract_address,
+            token_id.to_string(),
+            to_address,
+        ))
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn transfer_1155(&self, work_id: String, to_address: String) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
+
+        let contract_address =
+            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+        let token_id = self
+            .ethereum_cli
+            .get_erc1155_token_id_of(work_id.clone())
+            .await?;
+
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::transfer_1155(
+            user,
+            contract_address,
+            token_id.to_string(),
+            to_address,
+        ))
+        .await?;
+
+        Ok(())
+    }
 }

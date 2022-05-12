@@ -1,6 +1,6 @@
 use crate::graph::inputs::{
     CreateNft1155Input, CreateNft721Input, ImportThumbnailInput, ImportWorkInput,
-    RegisterUserInput, SellNftInput,
+    RegisterUserInput, SellNftInput, TransferNftInput,
 };
 use crate::graph::outputs::PreSignUploadUrl;
 use crate::graph::Context;
@@ -179,6 +179,36 @@ impl MutationRoot {
         context
             .admin_nft_app
             .sell_1155(input.work_id, input.ether)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn transfer_nft_721(context: &Context, input: TransferNftInput) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .admin_nft_app
+            .transfer_721(input.work_id, input.to_address)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn transfer_nft_1155(context: &Context, input: TransferNftInput) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_admin() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .admin_nft_app
+            .transfer_1155(input.work_id, input.to_address)
             .await
             .map_err(FieldErrorWithCode::from)?;
 
