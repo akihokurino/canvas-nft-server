@@ -14,7 +14,7 @@ pub async fn invoke_open_sea_sdk(
     let client = Client::new(&shared_config);
 
     let json = serde_json::to_string(&input)?;
-
+    println!("invoke lambda payload: {}", json);
     let resp = client
         .invoke()
         .function_name(OPEN_SEA_LAMBDA)
@@ -49,6 +49,8 @@ pub mod invoke_open_sea_sdk {
         pub token_id: String,
         #[serde(rename(serialize = "sellEther"))]
         pub sell_ether: f64,
+        #[serde(rename(serialize = "sellAmount"))]
+        pub sell_amount: i32,
         #[serde(rename(serialize = "schemaName"))]
         pub schema_name: String,
         #[serde(rename(serialize = "transferAddress"))]
@@ -58,7 +60,7 @@ pub mod invoke_open_sea_sdk {
     }
 
     impl Input {
-        pub fn sell(user: User, token_address: String, token_id: String, ether: f64) -> Self {
+        pub fn sell_721(user: User, token_address: String, token_id: String, ether: f64) -> Self {
             Self {
                 task: "sell".to_string(),
                 wallet_address: user.wallet_address.to_owned(),
@@ -66,7 +68,23 @@ pub mod invoke_open_sea_sdk {
                 token_address,
                 token_id,
                 sell_ether: ether,
-                schema_name: "".to_string(),
+                sell_amount: 1,
+                schema_name: "ERC721".to_string(),
+                transfer_address: "".to_string(),
+                transfer_amount: 0,
+            }
+        }
+
+        pub fn sell_1155(user: User, token_address: String, token_id: String, ether: f64) -> Self {
+            Self {
+                task: "sell".to_string(),
+                wallet_address: user.wallet_address.to_owned(),
+                wallet_secret: user.wallet_secret.to_owned(),
+                token_address,
+                token_id,
+                sell_ether: ether,
+                sell_amount: 1,
+                schema_name: "ERC1155".to_string(),
                 transfer_address: "".to_string(),
                 transfer_amount: 0,
             }
@@ -85,6 +103,7 @@ pub mod invoke_open_sea_sdk {
                 token_address,
                 token_id,
                 sell_ether: 0.0,
+                sell_amount: 0,
                 schema_name: "ERC721".to_string(),
                 transfer_address: to_address,
                 transfer_amount: 1,
@@ -104,6 +123,7 @@ pub mod invoke_open_sea_sdk {
                 token_address,
                 token_id,
                 sell_ether: 0.0,
+                sell_amount: 0,
                 schema_name: "ERC1155".to_string(),
                 transfer_address: to_address,
                 transfer_amount: 1,

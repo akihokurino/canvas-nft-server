@@ -313,7 +313,7 @@ impl Application {
             .get_erc721_token_id_of(work_id.clone())
             .await?;
 
-        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell(
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell_721(
             user,
             contract_address,
             token_id.to_string(),
@@ -334,7 +334,7 @@ impl Application {
             .get_erc1155_token_id_of(work_id.clone())
             .await?;
 
-        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell(
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell_1155(
             user,
             contract_address,
             token_id.to_string(),

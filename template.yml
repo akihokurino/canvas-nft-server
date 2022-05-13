@@ -57,6 +57,7 @@ Resources:
         - AmazonSNSFullAccess
         - AmazonSESFullAccess
         - AmazonS3FullAccess
+        - AWSLambda_FullAccess
 
   SubscriberFunction:
     Type: AWS::Serverless::Function
