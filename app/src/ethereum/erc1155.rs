@@ -12,7 +12,7 @@ use web3::types::U256;
 impl Client {
     fn erc1155(&self) -> AppResult<Contract<Http>> {
         let contract_address =
-            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC1155_CONTRACT_ADDRESS").expect("should set contract address");
         let contract = Contract::from_json(
             self.cli.eth(),
             self.parse_address(contract_address.clone()).unwrap(),

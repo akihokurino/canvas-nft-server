@@ -3,21 +3,20 @@ use crate::{AppError, AppResult};
 use aws_sdk_lambda::Client;
 use aws_sdk_s3::types::Blob;
 use serde::{Deserialize, Serialize};
-
-const OPEN_SEA_LAMBDA: &str =
-    "arn:aws:lambda:ap-northeast-1:326914400610:function:lambda-opensea-Function-E5REgOxitk1E";
+use std::env;
 
 pub async fn invoke_open_sea_sdk(
     input: invoke_open_sea_sdk::Input,
 ) -> AppResult<invoke_open_sea_sdk::Output> {
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
+    let arn = env::var("LAMBDA_OPENSEA_ARN").expect("should set lambda opensea arn");
 
     let json = serde_json::to_string(&input)?;
     println!("invoke lambda payload: {}", json);
     let resp = client
         .invoke()
-        .function_name(OPEN_SEA_LAMBDA)
+        .function_name(arn)
         .payload(Blob::new(json.into_bytes()))
         .send()
         .await?;

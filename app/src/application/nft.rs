@@ -189,7 +189,7 @@ impl Application {
 
     async fn save_asset721(&self, work_id: String) -> AppResult<()> {
         let contract_address =
-            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC721_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc721_token_id_of(work_id.clone())
@@ -220,7 +220,7 @@ impl Application {
 
     async fn save_asset1155(&self, work_id: String) -> AppResult<()> {
         let contract_address =
-            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC1155_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc1155_token_id_of(work_id.clone())
@@ -300,7 +300,7 @@ impl Application {
         let mut work = self.work_dao.get(work_id.clone()).await?;
 
         let contract_address =
-            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC721_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc721_token_id_of(work_id.clone())
@@ -325,7 +325,7 @@ impl Application {
         let mut work = self.work_dao.get(work_id.clone()).await?;
 
         let contract_address =
-            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC1155_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc1155_token_id_of(work_id.clone())
@@ -349,7 +349,7 @@ impl Application {
         let user = self.user_dao.get(self.me_id.clone()).await?;
 
         let contract_address =
-            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC721_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc721_token_id_of(work_id.clone())
@@ -370,7 +370,7 @@ impl Application {
         let user = self.user_dao.get(self.me_id.clone()).await?;
 
         let contract_address =
-            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC1155_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc1155_token_id_of(work_id.clone())
@@ -389,7 +389,7 @@ impl Application {
 
     pub async fn is_own_erc721(&self, work_id: String) -> AppResult<bool> {
         let contract_address =
-            env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC721_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc721_token_id_of(work_id.clone())
@@ -404,7 +404,7 @@ impl Application {
 
     pub async fn is_own_erc1155(&self, work_id: String) -> AppResult<bool> {
         let contract_address =
-            env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
+            env::var("ERC1155_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
             .ethereum_cli
             .get_erc1155_token_id_of(work_id.clone())
