@@ -49,6 +49,8 @@ pub mod invoke_open_sea_sdk {
         pub sell_payload: Option<SellPayload>,
         #[serde(rename(serialize = "transferPayload"))]
         pub transfer_payload: Option<TransferPayload>,
+        #[serde(rename(serialize = "createMetadataPayload"))]
+        pub create_metadata_payload: Option<CreateMetadataPayload>,
     }
 
     #[derive(Debug, Serialize)]
@@ -87,6 +89,18 @@ pub mod invoke_open_sea_sdk {
         pub quantity: i32,
     }
 
+    #[derive(Debug, Serialize)]
+    pub struct CreateMetadataPayload {
+        #[serde(rename(serialize = "name"))]
+        pub name: String,
+        #[serde(rename(serialize = "description"))]
+        pub description: String,
+        #[serde(rename(serialize = "externalUrl"))]
+        pub external_url: String,
+        #[serde(rename(serialize = "imageBase64"))]
+        pub image_base64: String,
+    }
+
     impl Input {
         pub fn sell_erc721(
             user: User,
@@ -107,6 +121,7 @@ pub mod invoke_open_sea_sdk {
                     quantity: 1,
                 }),
                 transfer_payload: None,
+                create_metadata_payload: None,
             }
         }
 
@@ -129,6 +144,7 @@ pub mod invoke_open_sea_sdk {
                     quantity: 1,
                 }),
                 transfer_payload: None,
+                create_metadata_payload: None,
             }
         }
 
@@ -151,6 +167,7 @@ pub mod invoke_open_sea_sdk {
                     transfer_address: to_address,
                     quantity: 1,
                 }),
+                create_metadata_payload: None,
             }
         }
 
@@ -172,6 +189,30 @@ pub mod invoke_open_sea_sdk {
                     schema_name: "ERC1155".to_string(),
                     transfer_address: to_address,
                     quantity: 1,
+                }),
+                create_metadata_payload: None,
+            }
+        }
+
+        pub fn create_metadata(
+            user: User,
+            name: String,
+            description: String,
+            external_url: String,
+            image_base64: String,
+        ) -> Self {
+            Self {
+                method: "createMetadata".to_string(),
+                wallet_address: user.wallet_address.to_owned(),
+                wallet_secret: user.wallet_secret.to_owned(),
+                buy_payload: None,
+                sell_payload: None,
+                transfer_payload: None,
+                create_metadata_payload: Some(CreateMetadataPayload {
+                    name,
+                    description,
+                    external_url,
+                    image_base64,
                 }),
             }
         }

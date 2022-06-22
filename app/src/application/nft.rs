@@ -5,8 +5,8 @@ use crate::domain::user::User;
 use crate::domain::work::{Work, WorkStatus};
 use crate::open_sea::metadata::Metadata;
 use crate::{
-    ddb, ethereum, internal_api, open_sea, AppError, AppResult, NFT_1155_ASSET_PATH_PREFIX,
-    NFT_721_ASSET_PATH_PREFIX,
+    ddb, ethereum, internal_api, open_sea, AppError, AppResult, ERC1155_ASSET_PATH_PREFIX,
+    ERC721_ASSET_PATH_PREFIX,
 };
 use bytes::Bytes;
 use std::env;
@@ -55,7 +55,7 @@ impl Application {
         let url = urls.first().unwrap();
         let bytes = reqwest::get(url).await?.bytes().await?;
 
-        let s3_key = format!("{}/{}.png", NFT_721_ASSET_PATH_PREFIX, work.id.clone());
+        let s3_key = format!("{}/{}.png", ERC721_ASSET_PATH_PREFIX, work.id.clone());
         let uploaded_url = upload_object(
             env::var("S3_USER_BUCKET").unwrap(),
             s3_key,
@@ -73,7 +73,7 @@ impl Application {
 
         let s3_key = format!(
             "{}/{}.metadata.json",
-            NFT_721_ASSET_PATH_PREFIX,
+            ERC721_ASSET_PATH_PREFIX,
             work.id.clone()
         );
         upload_object(
@@ -128,7 +128,7 @@ impl Application {
         let url = urls.first().unwrap();
         let bytes = reqwest::get(url).await?.bytes().await?;
 
-        let s3_key = format!("{}/{}.png", NFT_1155_ASSET_PATH_PREFIX, work.id.clone());
+        let s3_key = format!("{}/{}.png", ERC1155_ASSET_PATH_PREFIX, work.id.clone());
         let uploaded_url = upload_object(
             env::var("S3_USER_BUCKET").unwrap(),
             s3_key,
@@ -146,7 +146,7 @@ impl Application {
 
         let s3_key = format!(
             "{}/{}.metadata.json",
-            NFT_1155_ASSET_PATH_PREFIX,
+            ERC1155_ASSET_PATH_PREFIX,
             work.id.clone()
         );
         upload_object(
@@ -250,8 +250,8 @@ impl Application {
     }
 
     pub async fn sync_asset(&self) -> AppResult<()> {
-        let used_721_ids = self.ethereum_cli.get_erc721_used_names().await?;
-        for work_id in used_721_ids {
+        let used_erc721_ids = self.ethereum_cli.get_erc721_used_names().await?;
+        for work_id in used_erc721_ids {
             println!("sync work for erc721: {}", work_id);
 
             let work = self.work_dao.get(work_id.clone()).await;
@@ -265,12 +265,14 @@ impl Application {
 
             self.save_asset721(work.id.clone()).await?;
 
-            work.status = WorkStatus::PublishNFT;
-            self.work_dao.put(&work).await?;
+            if work.status == WorkStatus::Prepare {
+                work.status = WorkStatus::PublishNFT;
+                self.work_dao.put(&work).await?;
+            }
         }
 
-        let used_1155_ids = self.ethereum_cli.get_erc1155_used_names().await?;
-        for work_id in used_1155_ids {
+        let used_erc1155_ids = self.ethereum_cli.get_erc1155_used_names().await?;
+        for work_id in used_erc1155_ids {
             println!("sync work for erc1155: {}", work_id);
 
             let work = self.work_dao.get(work_id.clone()).await;
@@ -284,8 +286,10 @@ impl Application {
 
             self.save_asset1155(work.id.clone()).await?;
 
-            work.status = WorkStatus::PublishNFT;
-            self.work_dao.put(&work).await?;
+            if work.status == WorkStatus::Prepare {
+                work.status = WorkStatus::PublishNFT;
+                self.work_dao.put(&work).await?;
+            }
         }
 
         Ok(())
@@ -293,6 +297,7 @@ impl Application {
 
     pub async fn sell_erc721(&self, work_id: String, ether: f64) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
+        let mut work = self.work_dao.get(work_id.clone()).await?;
 
         let contract_address =
             env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
@@ -309,11 +314,15 @@ impl Application {
         ))
         .await?;
 
+        work.status = WorkStatus::SellOrder;
+        self.work_dao.put(&work).await?;
+
         Ok(())
     }
 
     pub async fn sell_erc1155(&self, work_id: String, ether: f64) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
+        let mut work = self.work_dao.get(work_id.clone()).await?;
 
         let contract_address =
             env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
@@ -329,6 +338,9 @@ impl Application {
             ether,
         ))
         .await?;
+
+        work.status = WorkStatus::SellOrder;
+        self.work_dao.put(&work).await?;
 
         Ok(())
     }
