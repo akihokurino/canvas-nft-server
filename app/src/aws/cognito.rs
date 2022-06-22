@@ -2,44 +2,108 @@ use crate::domain::user::AuthUser;
 use crate::{AppError, AppResult};
 use aws_sdk_cognitoidentityprovider::model::AttributeType;
 use aws_sdk_cognitoidentityprovider::Client;
-use jsonwebtokens_cognito::KeySet;
-use serde_json::Value;
+use jsonwebtoken::{DecodingKey, Validation};
+use serde::Deserialize;
+use std::collections::HashMap;
 use std::env;
+use std::sync::{Arc, RwLock};
 
-pub async fn verify_token(token: &str) -> AppResult<AuthUser> {
-    let pool_id = env::var("COGNITO_USER_POOL_ID").expect("need set cognito pool id");
-    let client_id = env::var("COGNITO_CLIENT_ID").expect("need set cognito client id");
+#[derive(Clone)]
+pub struct Verifier {
+    user_pool_id: String,
+    jwks: Arc<RwLock<HashMap<String, Jwk>>>,
+}
 
-    let keyset = KeySet::new("ap-northeast-1", pool_id)
-        .map_err(|_err| AppError::Internal("".to_string()))?;
-    let verifier = keyset
-        .new_id_token_verifier(&[&client_id])
-        .build()
-        .map_err(|_err| AppError::Internal("".to_string()))?;
+impl Verifier {
+    pub fn new() -> Self {
+        let user_pool_id = env::var("COGNITO_USER_POOL_ID").expect("need set cognito pool id");
 
-    let result = keyset
-        .verify(token, &verifier)
-        .await
+        Verifier {
+            user_pool_id,
+            jwks: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    pub async fn verify_token(&self, token: &str) -> AppResult<AuthUser> {
+        let token_header =
+            jsonwebtoken::decode_header(token).map_err(|_err| AppError::UnAuthenticate)?;
+        let kid = token_header.kid.ok_or_else(|| AppError::UnAuthenticate)?;
+        let jwk = self.jwks.read().unwrap().get(&kid).cloned();
+        let jwk = match jwk {
+            None => {
+                self.refresh_jwks()
+                    .await
+                    .map_err(|err| AppError::Internal(err.to_string()))?;
+                let jwk = self.jwks.read().unwrap().get(&kid).cloned();
+                match jwk {
+                    None => return Err(AppError::UnAuthenticate),
+                    Some(v) => v,
+                }
+            }
+            Some(v) => v,
+        };
+        let token = jsonwebtoken::decode::<Claims>(
+            token,
+            &DecodingKey::from_rsa_components(&jwk.n, &jwk.e)
+                .map_err(|_err| AppError::UnAuthenticate)?,
+            &Validation::new(jsonwebtoken::Algorithm::RS256),
+        )
         .map_err(|_err| AppError::UnAuthenticate)?;
 
-    let sub = result.get("sub").map_or("".to_string(), |v| match v {
-        Value::String(val) => val.to_string(),
-        _ => "".to_string(),
-    });
-    let raw_account_type = result
-        .get("custom:account_type")
-        .map_or("".to_string(), |v| match v {
-            Value::String(val) => val.to_string(),
-            _ => "".to_string(),
-        });
+        let sub = token.claims.sub.ok_or_else(|| AppError::UnAuthenticate)?;
+        let raw_account_type = token
+            .claims
+            .account_type
+            .ok_or_else(|| AppError::UnAuthenticate)?;
 
-    Ok(if raw_account_type.to_string() == "0".to_string() {
-        AuthUser::Admin(sub)
-    } else if raw_account_type.to_string() == "1".to_string() {
-        AuthUser::User(sub)
-    } else {
-        AuthUser::None
-    })
+        Ok(if raw_account_type.to_string() == "0".to_string() {
+            AuthUser::Publisher(sub)
+        } else {
+            AuthUser::Unknown
+        })
+    }
+
+    async fn refresh_jwks(&self) -> Result<(), String> {
+        let jwks = self.fetch_jwks().await?;
+        *self.jwks.write().unwrap() = jwks;
+        Ok(())
+    }
+
+    async fn fetch_jwks(&self) -> Result<HashMap<String, Jwk>, String> {
+        Ok(reqwest::get(format!(
+            "https://cognito-idp.ap-northeast-1.amazonaws.com/{}/.well-known/jwks.json",
+            self.user_pool_id
+        ))
+        .await
+        .map_err(|err| err.to_string())?
+        .json::<KeyResponse>()
+        .await
+        .map_err(|err| err.to_string())?
+        .keys
+        .into_iter()
+        .map(|k| (k.kid.clone(), k))
+        .collect())
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct Jwk {
+    e: String,
+    kid: String,
+    n: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct KeyResponse {
+    keys: Vec<Jwk>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct Claims {
+    #[serde(rename = "sub")]
+    sub: Option<String>,
+    #[serde(rename = "custom:account_type")]
+    account_type: Option<String>,
 }
 
 pub async fn get_email(id: String) -> AppResult<String> {

@@ -1,6 +1,5 @@
-use app::application::*;
 use app::aws::*;
-use app::{AppError, AppResult};
+use app::{application, AppError, AppResult};
 use lambda_runtime::{handler_fn, Context, Error};
 use serde_json::Value;
 
@@ -26,7 +25,8 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
 
             let email = cognito::get_email(data.executor_id.clone()).await?;
 
-            let admin_work_app = admin::work::Application::new(data.executor_id.clone()).await;
+            let admin_work_app =
+                application::work::Application::new(data.executor_id.clone()).await;
             let res = admin_work_app
                 .import_work(data.prefix, data.file_name)
                 .await
@@ -61,7 +61,8 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
 
             let email = cognito::get_email(data.executor_id.clone()).await?;
 
-            let admin_work_app = admin::work::Application::new(data.executor_id.clone()).await;
+            let admin_work_app =
+                application::work::Application::new(data.executor_id.clone()).await;
             let res = admin_work_app
                 .import_thumbnail(data.prefix, data.file_name)
                 .await
@@ -97,7 +98,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
 
             let email = cognito::get_email(data.executor_id.clone()).await?;
 
-            let admin_nft_app = admin::nft::Application::new(data.executor_id.clone()).await;
+            let admin_nft_app = application::nft::Application::new(data.executor_id.clone()).await;
             let res = admin_nft_app
                 .mint_erc721(data.work_id.clone())
                 .await
@@ -133,7 +134,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
 
             let email = cognito::get_email(data.executor_id.clone()).await?;
 
-            let admin_nft_app = admin::nft::Application::new(data.executor_id.clone()).await;
+            let admin_nft_app = application::nft::Application::new(data.executor_id.clone()).await;
             let res = admin_nft_app
                 .mint_erc1155(data.work_id.clone(), data.amount.clone())
                 .await

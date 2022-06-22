@@ -45,13 +45,7 @@ impl Application {
         }
     }
 
-    pub async fn prepare_erc721(
-        &self,
-        work_id: String,
-        gs_path: String,
-        point: i32,
-        level: i32,
-    ) -> AppResult<()> {
+    pub async fn prepare_erc721(&self, work_id: String, gs_path: String) -> AppResult<()> {
         let work = self.work_dao.get(work_id.clone()).await?;
 
         let urls = self
@@ -74,8 +68,6 @@ impl Application {
             work.id.clone(),
             "create test nft from rust".to_string(),
             uploaded_url,
-            point,
-            level,
         );
         let metadata = serde_json::to_string(&metadata)?;
 
@@ -125,8 +117,6 @@ impl Application {
         &self,
         work_id: String,
         gs_path: String,
-        point: i32,
-        level: i32,
         amount: u32,
     ) -> AppResult<()> {
         let work = self.work_dao.get(work_id.clone()).await?;
@@ -151,8 +141,6 @@ impl Application {
             work.id.clone(),
             "create test nft from rust".to_string(),
             uploaded_url,
-            point,
-            level,
         );
         let metadata = serde_json::to_string(&metadata)?;
 
@@ -303,7 +291,7 @@ impl Application {
         Ok(())
     }
 
-    pub async fn sell_721(&self, work_id: String, ether: f64) -> AppResult<()> {
+    pub async fn sell_erc721(&self, work_id: String, ether: f64) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
 
         let contract_address =
@@ -313,7 +301,7 @@ impl Application {
             .get_erc721_token_id_of(work_id.clone())
             .await?;
 
-        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell_721(
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell_erc721(
             user,
             contract_address,
             token_id.to_string(),
@@ -324,7 +312,7 @@ impl Application {
         Ok(())
     }
 
-    pub async fn sell_1155(&self, work_id: String, ether: f64) -> AppResult<()> {
+    pub async fn sell_erc1155(&self, work_id: String, ether: f64) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
 
         let contract_address =
@@ -334,7 +322,7 @@ impl Application {
             .get_erc1155_token_id_of(work_id.clone())
             .await?;
 
-        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell_1155(
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::sell_erc1155(
             user,
             contract_address,
             token_id.to_string(),
@@ -345,7 +333,7 @@ impl Application {
         Ok(())
     }
 
-    pub async fn transfer_721(&self, work_id: String, to_address: String) -> AppResult<()> {
+    pub async fn transfer_erc721(&self, work_id: String, to_address: String) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
 
         let contract_address =
@@ -355,7 +343,7 @@ impl Application {
             .get_erc721_token_id_of(work_id.clone())
             .await?;
 
-        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::transfer_721(
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::transfer_erc721(
             user,
             contract_address,
             token_id.to_string(),
@@ -366,7 +354,7 @@ impl Application {
         Ok(())
     }
 
-    pub async fn transfer_1155(&self, work_id: String, to_address: String) -> AppResult<()> {
+    pub async fn transfer_erc1155(&self, work_id: String, to_address: String) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
 
         let contract_address =
@@ -376,7 +364,7 @@ impl Application {
             .get_erc1155_token_id_of(work_id.clone())
             .await?;
 
-        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::transfer_1155(
+        lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::transfer_erc1155(
             user,
             contract_address,
             token_id.to_string(),
@@ -387,7 +375,7 @@ impl Application {
         Ok(())
     }
 
-    pub async fn is_own_721(&self, work_id: String) -> AppResult<bool> {
+    pub async fn is_own_erc721(&self, work_id: String) -> AppResult<bool> {
         let contract_address =
             env::var("NFT_721_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self
@@ -402,7 +390,7 @@ impl Application {
         self.is_own(contract_address, token_id).await
     }
 
-    pub async fn is_own_1155(&self, work_id: String) -> AppResult<bool> {
+    pub async fn is_own_erc1155(&self, work_id: String) -> AppResult<bool> {
         let contract_address =
             env::var("NFT_1155_CONTRACT_ADDRESS").expect("should set contract address");
         let token_id = self

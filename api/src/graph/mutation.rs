@@ -1,6 +1,7 @@
 use crate::graph::inputs::{
-    CreateNft1155Input, CreateNft721Input, ImportThumbnailInput, ImportWorkInput,
-    RegisterUserInput, SellNftInput, TransferNftInput,
+    CreateERC1155Input, CreateERC721Input, ImportThumbnailInput, ImportWorkInput,
+    RegisterUserInput, SellERC1155Input, SellERC721Input, TransferERC1155Input,
+    TransferERC721Input,
 };
 use crate::graph::outputs::PreSignUploadUrl;
 use crate::graph::Context;
@@ -14,12 +15,12 @@ pub struct MutationRoot;
 impl MutationRoot {
     async fn register_user(context: &Context, input: RegisterUserInput) -> FieldResult<String> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_master() {
+        if !auth_user.is_system() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         let user_id = context
-            .admin_user_app
+            .user_app
             .register(
                 input.email,
                 input.password,
@@ -34,7 +35,7 @@ impl MutationRoot {
 
     async fn import_work(context: &Context, input: ImportWorkInput) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_master() {
+        if !auth_user.is_system() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
@@ -53,7 +54,7 @@ impl MutationRoot {
 
     async fn import_thumbnail(context: &Context, input: ImportThumbnailInput) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_master() {
+        if !auth_user.is_system() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
@@ -72,12 +73,12 @@ impl MutationRoot {
 
     async fn pre_sign_upload_work(context: &Context) -> FieldResult<PreSignUploadUrl> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_master() {
+        if !auth_user.is_system() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         let (url, file_name) = context
-            .admin_work_app
+            .work_app
             .pre_sign_for_upload(String::from(app::WORK_CSV_PATH_PREFIX))
             .await?;
 
@@ -89,12 +90,12 @@ impl MutationRoot {
 
     async fn pre_sign_upload_thumbnail(context: &Context) -> FieldResult<PreSignUploadUrl> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_master() {
+        if !auth_user.is_system() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         let (url, file_name) = context
-            .admin_work_app
+            .work_app
             .pre_sign_for_upload(String::from(app::THUMBNAIL_CSV_PATH_PREFIX))
             .await?;
 
@@ -104,50 +105,14 @@ impl MutationRoot {
         })
     }
 
-    async fn create_nft_721(context: &Context, input: CreateNft721Input) -> FieldResult<bool> {
-        let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
-            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
-        }
-
-        context
-            .admin_nft_app
-            .prepare_erc721(input.work_id, input.gs_path, input.point, input.level)
-            .await
-            .map_err(FieldErrorWithCode::from)?;
-
-        Ok(true)
-    }
-
-    async fn create_nft_1155(context: &Context, input: CreateNft1155Input) -> FieldResult<bool> {
-        let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
-            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
-        }
-
-        context
-            .admin_nft_app
-            .prepare_erc1155(
-                input.work_id,
-                input.gs_path,
-                input.point,
-                input.level,
-                input.amount as u32,
-            )
-            .await
-            .map_err(FieldErrorWithCode::from)?;
-
-        Ok(true)
-    }
-
     async fn delete_work(context: &Context, id: String) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_publisher() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         context
-            .admin_work_app
+            .work_app
             .delete(id)
             .await
             .map_err(FieldErrorWithCode::from)?;
@@ -155,60 +120,90 @@ impl MutationRoot {
         Ok(true)
     }
 
-    async fn sell_nft_721(context: &Context, input: SellNftInput) -> FieldResult<bool> {
+    async fn create_erc721(context: &Context, input: CreateERC721Input) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_publisher() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         context
-            .admin_nft_app
-            .sell_721(input.work_id, input.ether)
+            .nft_app
+            .prepare_erc721(input.work_id, input.gs_path)
             .await
             .map_err(FieldErrorWithCode::from)?;
 
         Ok(true)
     }
 
-    async fn sell_nft_1155(context: &Context, input: SellNftInput) -> FieldResult<bool> {
+    async fn create_erc1155(context: &Context, input: CreateERC1155Input) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_publisher() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         context
-            .admin_nft_app
-            .sell_1155(input.work_id, input.ether)
+            .nft_app
+            .prepare_erc1155(input.work_id, input.gs_path, input.amount as u32)
             .await
             .map_err(FieldErrorWithCode::from)?;
 
         Ok(true)
     }
 
-    async fn transfer_nft_721(context: &Context, input: TransferNftInput) -> FieldResult<bool> {
+    async fn sell_erc721(context: &Context, input: SellERC721Input) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_publisher() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         context
-            .admin_nft_app
-            .transfer_721(input.work_id, input.to_address)
+            .nft_app
+            .sell_erc721(input.work_id, input.ether)
             .await
             .map_err(FieldErrorWithCode::from)?;
 
         Ok(true)
     }
 
-    async fn transfer_nft_1155(context: &Context, input: TransferNftInput) -> FieldResult<bool> {
+    async fn sell_erc1155(context: &Context, input: SellERC1155Input) -> FieldResult<bool> {
         let auth_user = context.auth_user.to_owned();
-        if !auth_user.is_admin() {
+        if !auth_user.is_publisher() {
             return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
         }
 
         context
-            .admin_nft_app
-            .transfer_1155(input.work_id, input.to_address)
+            .nft_app
+            .sell_erc1155(input.work_id, input.ether)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn transfer_erc721(context: &Context, input: TransferERC721Input) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_publisher() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .nft_app
+            .transfer_erc721(input.work_id, input.to_address)
+            .await
+            .map_err(FieldErrorWithCode::from)?;
+
+        Ok(true)
+    }
+
+    async fn transfer_erc1155(context: &Context, input: TransferERC1155Input) -> FieldResult<bool> {
+        let auth_user = context.auth_user.to_owned();
+        if !auth_user.is_publisher() {
+            return Err(FieldErrorWithCode::from(AppError::UnAuthenticate).into());
+        }
+
+        context
+            .nft_app
+            .transfer_erc1155(input.work_id, input.to_address)
             .await
             .map_err(FieldErrorWithCode::from)?;
 

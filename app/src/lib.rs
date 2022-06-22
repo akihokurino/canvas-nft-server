@@ -164,22 +164,6 @@ impl From<SdkError<AdminSetUserPasswordError>> for AppError {
     }
 }
 
-impl From<jsonwebtokens_cognito::Error> for AppError {
-    fn from(e: jsonwebtokens_cognito::Error) -> Self {
-        match e {
-            jsonwebtokens_cognito::Error::NetworkError(_) => {
-                let msg = "cognito network error".to_string();
-                Self::Internal(msg)
-            }
-            jsonwebtokens_cognito::Error::CacheMiss(_) => {
-                let msg = "cognito internal error".to_string();
-                Self::Internal(msg)
-            }
-            _ => Self::UnAuthenticate,
-        }
-    }
-}
-
 impl From<reqwest::Error> for AppError {
     fn from(e: reqwest::Error) -> Self {
         let code = e.status().unwrap_or_default();

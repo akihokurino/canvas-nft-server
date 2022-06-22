@@ -1,6 +1,5 @@
-use app::application::*;
 use app::aws::*;
-use app::{AppError, AppResult};
+use app::{application, AppError, AppResult};
 use lambda_runtime::{handler_fn, Context, Error};
 use serde_json::Value;
 
@@ -17,7 +16,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
     println!("exec {:?}", command);
 
     if command == "sync-work" {
-        let admin_work_app = admin::work::Application::new("batch".to_string()).await;
+        let admin_work_app = application::work::Application::new("batch".to_string()).await;
         admin_work_app
             .sync_work_with_thumbnail()
             .await
@@ -25,7 +24,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
     }
 
     if command == "sync-nft-asset" {
-        let admin_nft_app = admin::nft::Application::new("batch".to_string()).await;
+        let admin_nft_app = application::nft::Application::new("batch".to_string()).await;
         admin_nft_app
             .sync_asset()
             .await

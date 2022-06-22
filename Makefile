@@ -9,6 +9,9 @@ clean:
 	cargo clean
 	rm -rf target_lambda
 
+build-linux:
+	cargo build --release --bin api --target x86_64-unknown-linux-musl
+
 build:
 	cd api && cargo build
 	cd subscriber && cargo build

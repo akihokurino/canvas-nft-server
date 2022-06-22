@@ -17,9 +17,9 @@ use strum_macros::Display as StrumDisplay;
 
 pub struct Context {
     pub auth_user: AuthUser,
-    pub admin_work_app: application::admin::work::Application,
-    pub admin_nft_app: application::admin::nft::Application,
-    pub admin_user_app: application::admin::user::Application,
+    pub work_app: application::work::Application,
+    pub nft_app: application::nft::Application,
+    pub user_app: application::user::Application,
     pub thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader,
     pub asset721_by_work_loader: dataloader::asset721_by_work::Loader,
     pub asset1155_by_work_loader: dataloader::asset1155_by_work::Loader,
@@ -30,18 +30,15 @@ impl juniper::Context for Context {}
 
 impl Context {
     pub async fn new(auth_user: AuthUser) -> Self {
-        let admin_work_app = application::admin::work::Application::new(
-            auth_user.user_id().clone().unwrap_or_default(),
-        )
-        .await;
-        let admin_nft_app = application::admin::nft::Application::new(
-            auth_user.user_id().clone().unwrap_or_default(),
-        )
-        .await;
-        let admin_user_app = application::admin::user::Application::new(
-            auth_user.user_id().clone().unwrap_or_default(),
-        )
-        .await;
+        let work_app =
+            application::work::Application::new(auth_user.user_id().clone().unwrap_or_default())
+                .await;
+        let nft_app =
+            application::nft::Application::new(auth_user.user_id().clone().unwrap_or_default())
+                .await;
+        let user_app =
+            application::user::Application::new(auth_user.user_id().clone().unwrap_or_default())
+                .await;
 
         let thumbnail_by_work_loader: dataloader::thumbnail_by_work::Loader =
             dataloader::thumbnail_by_work::Batcher::new_loader();
@@ -54,9 +51,9 @@ impl Context {
 
         Self {
             auth_user,
-            admin_work_app,
-            admin_nft_app,
-            admin_user_app,
+            work_app,
+            nft_app,
+            user_app,
             thumbnail_by_work_loader,
             asset721_by_work_loader,
             asset1155_by_work_loader,

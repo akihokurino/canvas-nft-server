@@ -2,42 +2,32 @@ use crate::ethereum;
 
 #[derive(Clone, PartialEq)]
 pub enum AuthUser {
-    // マスターユーザー
-    Master,
-    // 管理ユーザー
-    Admin(String),
-    // 一般ユーザー（ログイン済）
-    User(String),
-    // 一般ユーザー（未ログイン）
-    None,
+    // システム
+    System,
+    // NFT生成ユーザー
+    Publisher(String),
+    // 不明
+    Unknown,
 }
 
 impl AuthUser {
     pub fn user_id(&self) -> Option<String> {
         match self {
-            AuthUser::Admin(id) => Some(id.to_owned()),
-            AuthUser::User(id) => Some(id.to_owned()),
+            AuthUser::Publisher(id) => Some(id.to_owned()),
             _ => None,
         }
     }
 
-    pub fn is_master(&self) -> bool {
+    pub fn is_system(&self) -> bool {
         match self {
-            AuthUser::Master => true,
+            AuthUser::System => true,
             _ => false,
         }
     }
 
-    pub fn is_admin(&self) -> bool {
+    pub fn is_publisher(&self) -> bool {
         match self {
-            AuthUser::Admin(_id) => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_service(&self) -> bool {
-        match self {
-            AuthUser::User(_id) => true,
+            AuthUser::Publisher(_id) => true,
             _ => false,
         }
     }

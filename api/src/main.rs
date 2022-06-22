@@ -19,10 +19,12 @@ async fn main() -> Result<(), LambdaError> {
 
     let app = move || {
         let schema = create_schema();
+        let cognito_verifier = app::aws::cognito::Verifier::new();
 
         // ApiGatewayにドメインを設定しないのでステージ名がパスに入る
         App::new()
             .app_data(Data::new(schema))
+            .app_data(Data::new(cognito_verifier))
             .service(
                 web::resource("/default/graphql")
                     .route(web::post().to(graphql_route))
@@ -59,35 +61,35 @@ async fn graphql_route(
     req: HttpRequest,
     payload: web::Payload,
     schema: web::Data<Schema>,
+    cognito_verifier: web::Data<app::aws::cognito::Verifier>,
 ) -> actix_web::Result<HttpResponse> {
-    let auth_user = authenticate(&req).await;
+    let auth_user = authenticate(&req, cognito_verifier.get_ref()).await;
     let context = Context::new(auth_user).await;
     graphql_handler(&schema, &context, req, payload).await
 }
 
-async fn authenticate(req: &HttpRequest) -> AuthUser {
+async fn authenticate(
+    req: &HttpRequest,
+    cognito_verifier: &app::aws::cognito::Verifier,
+) -> AuthUser {
     if let Some(token) = get_into::<String>(req.headers(), "x-master-token") {
         if token == env::var("INTERNAL_TOKEN").unwrap() {
-            return AuthUser::Master;
+            return AuthUser::System;
         }
     }
 
-    if let Some(id) = get_into(req.headers(), "x-admin-id") {
-        return AuthUser::Admin(id);
-    }
-
-    if let Some(id) = get_into(req.headers(), "x-user-id") {
-        return AuthUser::User(id);
+    if let Some(id) = get_into(req.headers(), "x-publisher-id") {
+        return AuthUser::Publisher(id);
     }
 
     let token: &str = get(req.headers(), "authorization").unwrap_or_default();
     if token.len() < 7 {
-        return AuthUser::None;
+        return AuthUser::Unknown;
     }
 
-    let result = app::aws::cognito::verify_token(&token[7..]).await;
+    let result = cognito_verifier.verify_token(&token[7..]).await;
     if let Err(_e) = result {
-        return AuthUser::None;
+        return AuthUser::Unknown;
     }
 
     result.ok().unwrap()

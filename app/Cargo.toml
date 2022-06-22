@@ -1,19 +1,19 @@
 [package]
 name = "app"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aws-config = "0.11.0"
-aws-sdk-dynamodb = "0.11.0"
-aws-sdk-ssm = "0.11.0"
-aws-sdk-s3 = "0.11.0"
-aws-sdk-sns = "0.11.0"
-aws-sdk-sesv2 = "0.11.0"
-aws-sdk-cognitoidentityprovider = "0.11.0"
-aws-sdk-lambda = "0.11.0"
+aws-config = "0.13.0"
+aws-sdk-dynamodb = "0.13.0"
+aws-sdk-ssm = "0.13.0"
+aws-sdk-s3 = "0.13.0"
+aws-sdk-sns = "0.13.0"
+aws-sdk-sesv2 = "0.13.0"
+aws-sdk-cognitoidentityprovider = "0.13.0"
+aws-sdk-lambda = "0.13.0"
 tokio = { version = "1", features = ["full"] }
 thiserror = "1.0"
 uuid = { version = "0.8", features = ["serde", "v4"] }
@@ -21,7 +21,7 @@ tonic = { version = "0.4", features = ["prost"] }
 prost = "0.7"
 prost-types = "0.7"
 bytes = "1"
-jsonwebtokens-cognito = "0.1.0-alpha"
+jsonwebtoken = "8.1.1"
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 http = "0.2"
 http-body = "0.4.2"
@@ -37,7 +37,6 @@ futures = "0.3"
 async-trait = "0.1"
 strum = "0.23"
 strum_macros = "0.23"
-jsonwebtoken = "7.2.0"
 web3 = "0.17.0"
 hex-literal = "0.3.4"
 bigdecimal = "0.0.14"
