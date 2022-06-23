@@ -45,7 +45,13 @@ impl Application {
         }
     }
 
-    pub async fn prepare_erc721(&self, work_id: String, gs_path: String) -> AppResult<()> {
+    pub async fn prepare_erc721(
+        &self,
+        work_id: String,
+        gs_path: String,
+        use_ipfs: bool,
+    ) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
         let work = self.work_dao.get(work_id.clone()).await?;
 
         let urls = self
@@ -55,34 +61,29 @@ impl Application {
         let url = urls.first().unwrap();
         let bytes = reqwest::get(url).await?.bytes().await?;
 
-        let s3_key = format!("{}/{}.png", ERC721_ASSET_PATH_PREFIX, work.id.clone());
-        let uploaded_url = upload_object(
-            env::var("S3_USER_BUCKET").unwrap(),
-            s3_key,
-            bytes,
-            "image/png".to_string(),
-        )
-        .await?;
+        let mut ipfs_hash: String = "".to_string();
+        let mut s3_key: String = "".to_string();
 
-        let metadata = Metadata::new(
-            work.id.clone(),
-            "create test nft from rust".to_string(),
-            uploaded_url,
-        );
-        let metadata = serde_json::to_string(&metadata)?;
+        if use_ipfs {
+            let output =
+                lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::create_metadata(
+                    user,
+                    work_id.clone(),
+                    "nft from canvas-nft-server".to_string(),
+                    format!("https://canvas-329810.web.app/{}", work_id.clone()),
+                    base64::encode(bytes),
+                ))
+                .await?;
 
-        let s3_key = format!(
-            "{}/{}.metadata.json",
-            ERC721_ASSET_PATH_PREFIX,
-            work.id.clone()
-        );
-        upload_object(
-            env::var("S3_USER_BUCKET").unwrap(),
-            s3_key,
-            Bytes::from(metadata),
-            "application/json".to_string(),
-        )
-        .await?;
+            if output.ipfs_response.is_none() {
+                return Err(AppError::Internal("".to_string()));
+            }
+            ipfs_hash = output.ipfs_response.unwrap().hash;
+        } else {
+            s3_key = self
+                .upload_metadata_to_s3(work_id.clone(), ERC721_ASSET_PATH_PREFIX, bytes)
+                .await?;
+        }
 
         let asset = Asset721::new(work.id.clone());
         self.asset721_dao.put(&asset).await?;
@@ -90,6 +91,8 @@ impl Application {
         let payload = sns::MintNft721Payload {
             executor_id: self.me_id.clone(),
             work_id: work.id.clone(),
+            ipfs_hash,
+            s3_key,
         };
 
         sns::publish(sns::Task::MintNFT721(payload)).await?;
@@ -118,7 +121,9 @@ impl Application {
         work_id: String,
         gs_path: String,
         amount: u32,
+        use_ipfs: bool,
     ) -> AppResult<()> {
+        let user = self.user_dao.get(self.me_id.clone()).await?;
         let work = self.work_dao.get(work_id.clone()).await?;
 
         let urls = self
@@ -128,34 +133,29 @@ impl Application {
         let url = urls.first().unwrap();
         let bytes = reqwest::get(url).await?.bytes().await?;
 
-        let s3_key = format!("{}/{}.png", ERC1155_ASSET_PATH_PREFIX, work.id.clone());
-        let uploaded_url = upload_object(
-            env::var("S3_USER_BUCKET").unwrap(),
-            s3_key,
-            bytes,
-            "image/png".to_string(),
-        )
-        .await?;
+        let mut ipfs_hash: String = "".to_string();
+        let mut s3_key: String = "".to_string();
 
-        let metadata = Metadata::new(
-            work.id.clone(),
-            "create test nft from rust".to_string(),
-            uploaded_url,
-        );
-        let metadata = serde_json::to_string(&metadata)?;
+        if use_ipfs {
+            let output =
+                lambda::invoke_open_sea_sdk(lambda::invoke_open_sea_sdk::Input::create_metadata(
+                    user,
+                    work_id.clone(),
+                    "nft from canvas-nft-server".to_string(),
+                    format!("https://canvas-329810.web.app/{}", work_id.clone()),
+                    base64::encode(bytes),
+                ))
+                .await?;
 
-        let s3_key = format!(
-            "{}/{}.metadata.json",
-            ERC1155_ASSET_PATH_PREFIX,
-            work.id.clone()
-        );
-        upload_object(
-            env::var("S3_USER_BUCKET").unwrap(),
-            s3_key,
-            Bytes::from(metadata),
-            "application/json".to_string(),
-        )
-        .await?;
+            if output.ipfs_response.is_none() {
+                return Err(AppError::Internal("".to_string()));
+            }
+            ipfs_hash = output.ipfs_response.unwrap().hash;
+        } else {
+            s3_key = self
+                .upload_metadata_to_s3(work_id.clone(), ERC1155_ASSET_PATH_PREFIX, bytes)
+                .await?;
+        }
 
         let asset = Asset1155::new(work.id.clone());
         self.asset1155_dao.put(&asset).await?;
@@ -164,6 +164,8 @@ impl Application {
             executor_id: self.me_id.clone(),
             work_id: work.id.clone(),
             amount: amount.to_owned(),
+            ipfs_hash,
+            s3_key,
         };
 
         sns::publish(sns::Task::MintNFT1155(payload)).await?;
@@ -185,6 +187,40 @@ impl Application {
         self.work_dao.put(&work).await?;
 
         Ok(())
+    }
+
+    async fn upload_metadata_to_s3(
+        &self,
+        work_id: String,
+        path: &str,
+        bytes: Bytes,
+    ) -> AppResult<String> {
+        let s3_key = format!("{}/{}.png", path, work_id.clone());
+        let uploaded_url = upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key,
+            bytes,
+            "image/png".to_string(),
+        )
+        .await?;
+
+        let metadata = Metadata::new(
+            work_id.clone(),
+            "nft from canvas-nft-server".to_string(),
+            uploaded_url,
+        );
+        let metadata = serde_json::to_string(&metadata)?;
+
+        let s3_key = format!("{}/{}.metadata.json", path, work_id.clone());
+        upload_object(
+            env::var("S3_USER_BUCKET").unwrap(),
+            s3_key.clone(),
+            Bytes::from(metadata),
+            "application/json".to_string(),
+        )
+        .await?;
+
+        Ok(s3_key.to_owned())
     }
 
     async fn save_asset721(&self, work_id: String) -> AppResult<()> {

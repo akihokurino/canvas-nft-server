@@ -20,6 +20,7 @@ pub struct ImportThumbnailInput {
 pub struct CreateERC721Input {
     pub work_id: String,
     pub gs_path: String,
+    pub use_ipfs: bool,
 }
 
 #[derive(Debug, GraphQLInputObject)]
@@ -27,6 +28,7 @@ pub struct CreateERC1155Input {
     pub work_id: String,
     pub gs_path: String,
     pub amount: i32,
+    pub use_ipfs: bool,
 }
 
 #[derive(Debug, GraphQLInputObject)]

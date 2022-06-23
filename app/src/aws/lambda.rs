@@ -13,7 +13,6 @@ pub async fn invoke_open_sea_sdk(
     let arn = env::var("LAMBDA_OPENSEA_ARN").expect("should set lambda opensea arn");
 
     let json = serde_json::to_string(&input)?;
-    println!("invoke lambda payload: {}", json);
     let resp = client
         .invoke()
         .function_name(arn)
@@ -219,7 +218,19 @@ pub mod invoke_open_sea_sdk {
 
     #[derive(Debug, Deserialize)]
     pub struct Output {
+        #[serde(rename(deserialize = "message"))]
         pub message: String,
+        #[serde(rename(deserialize = "result"))]
         pub result: i32,
+        #[serde(rename(deserialize = "ipfsResponse"))]
+        pub ipfs_response: Option<OutputIPFS>,
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct OutputIPFS {
+        #[serde(rename(deserialize = "hash"))]
+        pub hash: String,
+        #[serde(rename(deserialize = "url"))]
+        pub url: String,
     }
 }

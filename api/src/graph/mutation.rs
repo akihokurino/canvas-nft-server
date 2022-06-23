@@ -128,7 +128,7 @@ impl MutationRoot {
 
         context
             .nft_app
-            .prepare_erc721(input.work_id, input.gs_path)
+            .prepare_erc721(input.work_id, input.gs_path, input.use_ipfs)
             .await
             .map_err(FieldErrorWithCode::from)?;
 
@@ -143,7 +143,12 @@ impl MutationRoot {
 
         context
             .nft_app
-            .prepare_erc1155(input.work_id, input.gs_path, input.amount as u32)
+            .prepare_erc1155(
+                input.work_id,
+                input.gs_path,
+                input.amount as u32,
+                input.use_ipfs,
+            )
             .await
             .map_err(FieldErrorWithCode::from)?;
 

@@ -69,6 +69,8 @@ pub struct CreateThumbnailPayload {
 pub struct MintNft721Payload {
     pub executor_id: String,
     pub work_id: String,
+    pub ipfs_hash: String,
+    pub s3_key: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -76,6 +78,8 @@ pub struct MintNft1155Payload {
     pub executor_id: String,
     pub work_id: String,
     pub amount: u32,
+    pub ipfs_hash: String,
+    pub s3_key: String,
 }
 
 pub async fn publish(task: Task) -> AppResult<()> {
