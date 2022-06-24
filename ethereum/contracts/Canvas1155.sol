@@ -5,19 +5,24 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Canvas1155 is Context, ERC1155, Ownable {
-    uint256 _localTokenId = 1;
     mapping(string => uint256) private _name2token;
     mapping(uint256 => string) private _token2name;
+    mapping(uint256 => string) private _token2ipfsHash;
+    mapping(uint256 => string) private _token2s3Key;
 
-    string public name = "Canvas1155";
-    string public symbol = "CV";
+    uint256 _localTokenId = 1;
+
+    string public name = "C_NFT_1155";
+    string public symbol = "CN";
 
     constructor() ERC1155("") {}
 
     function mint(
         address to,
         string memory workId,
-        uint256 amount
+        uint256 amount,
+        string memory ipfsHash,
+        string memory s3Key
     ) public virtual onlyOwner {
         require(_name2token[workId] == 0, "already mint");
 
@@ -25,35 +30,12 @@ contract Canvas1155 is Context, ERC1155, Ownable {
 
         _name2token[workId] = tokenId;
         _token2name[tokenId] = workId;
+        _token2ipfsHash[tokenId] = ipfsHash;
+        _token2s3Key[tokenId] = s3Key;
 
         _mint(to, tokenId, amount, "");
 
         _localTokenId += 1;
-    }
-
-    function mintBatch(
-        address to,
-        string[] memory workIds,
-        uint256[] memory amounts
-    ) public {
-        require(workIds.length <= 10);
-
-        uint256[] memory tokenIds = new uint256[](workIds.length);
-        for (uint256 i = 0; i < workIds.length; i++) {
-            string memory workId = workIds[i];
-            require(_name2token[workId] == 0, "already mint");
-
-            uint256 tokenId = _localTokenId;
-
-            _name2token[workId] = tokenId;
-            _token2name[tokenId] = workId;
-
-            tokenIds[i] = tokenId;
-
-            _localTokenId += 1;
-        }
-
-        _mintBatch(to, tokenIds, amounts, "");
     }
 
     function uri(uint256 tokenId)
@@ -63,16 +45,35 @@ contract Canvas1155 is Context, ERC1155, Ownable {
         override
         returns (string memory)
     {
-        string memory workId = _token2name[tokenId];
+        string memory ipfsHash = _token2ipfsHash[tokenId];
+        string memory s3Key = _token2s3Key[tokenId];
 
-        return
-            string(
-                abi.encodePacked(
-                    "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/1155_asset/",
-                    workId,
-                    ".metadata.json"
-                )
-            );
+        if (!isEmptyString(ipfsHash)) {
+            return
+                string(
+                    abi.encodePacked(
+                        "https://ipfs.moralis.io:2053/ipfs/",
+                        ipfsHash
+                    )
+                );
+        }
+
+        if (!isEmptyString(s3Key)) {
+            return
+                string(
+                    abi.encodePacked(
+                        "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/",
+                        s3Key
+                    )
+                );
+        }
+
+        revert("unknown token");
+    }
+
+    function isEmptyString(string memory value) private pure returns (bool) {
+        bytes memory b = bytes(value);
+        return b.length == 0;
     }
 
     function tokenIdOf(string memory workId)

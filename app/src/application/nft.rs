@@ -100,12 +100,17 @@ impl Application {
         Ok(())
     }
 
-    pub async fn mint_erc721(&self, work_id: String) -> AppResult<()> {
+    pub async fn mint_erc721(
+        &self,
+        work_id: String,
+        ipfs_hash: String,
+        s3_key: String,
+    ) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
         let mut work = self.work_dao.get(work_id.clone()).await?;
 
         self.ethereum_cli
-            .mint_erc721(&user, work_id.clone())
+            .mint_erc721(&user, work_id.clone(), ipfs_hash, s3_key)
             .await?;
 
         self.save_asset721(work_id.clone()).await?;
@@ -173,12 +178,18 @@ impl Application {
         Ok(())
     }
 
-    pub async fn mint_erc1155(&self, work_id: String, amount: u32) -> AppResult<()> {
+    pub async fn mint_erc1155(
+        &self,
+        work_id: String,
+        amount: u32,
+        ipfs_hash: String,
+        s3_key: String,
+    ) -> AppResult<()> {
         let user = self.user_dao.get(self.me_id.clone()).await?;
         let mut work = self.work_dao.get(work_id.clone()).await?;
 
         self.ethereum_cli
-            .mint_erc1155(&user, work_id.clone(), amount)
+            .mint_erc1155(&user, work_id.clone(), amount, ipfs_hash, s3_key)
             .await?;
 
         self.save_asset1155(work_id.clone()).await?;

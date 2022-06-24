@@ -65,3 +65,7 @@ debug-token:
         --auth-flow ADMIN_NO_SRP_AUTH \
         --auth-parameters USERNAME=${DEBUG_EMAIL},PASSWORD=Test1234 \
         --profile me
+
+extract-abi:
+	cat ethereum/build/contracts/Canvas721.json | jq '.abi' > app/src/ethereum/canvas_erc721.abi.json
+	cat ethereum/build/contracts/Canvas1155.json | jq '.abi' > app/src/ethereum/canvas_erc1155.abi.json

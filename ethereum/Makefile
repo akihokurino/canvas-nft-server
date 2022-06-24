@@ -12,8 +12,6 @@ truffle-develop:
 
 truffle-migrate-rinkeby-net:
 	./node_modules/.bin/truffle migrate --reset --network rinkeby
-	cat build/contracts/Canvas721.json | jq '.abi' > canvas_erc721.abi.json
-	cat build/contracts/Canvas1155.json | jq '.abi' > canvas_erc1155.abi.json
 
 truffle-console-rinkeby-net:
 	./node_modules/.bin/truffle console --network rinkeby	

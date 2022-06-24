@@ -51,7 +51,13 @@ impl Client {
         Ok(id)
     }
 
-    pub async fn mint_erc721(&self, user: &User, work_id: String) -> AppResult<()> {
+    pub async fn mint_erc721(
+        &self,
+        user: &User,
+        work_id: String,
+        ipfs_hash: String,
+        s3_key: String,
+    ) -> AppResult<()> {
         let contract = self.erc721()?;
         let prev_key = SecretKey::from_str(&user.wallet_secret).unwrap();
         let gas_limit: i64 = 5500000;
@@ -63,6 +69,8 @@ impl Client {
                 (
                     self.parse_address(user.wallet_address.to_owned()).unwrap(),
                     work_id,
+                    ipfs_hash,
+                    s3_key,
                 ),
                 Options::with(|opt| {
                     opt.gas = Some(U256::from(gas_limit));

@@ -7,35 +7,69 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Canvas721 is Context, ERC721Enumerable, Ownable {
     mapping(string => uint256) private _name2token;
     mapping(uint256 => string) private _token2name;
+    mapping(uint256 => string) private _token2ipfsHash;
+    mapping(uint256 => string) private _token2s3Key;
+
     uint256 _localTokenId = 1;
 
-    constructor() ERC721("Canvas721", "CV") {}
+    constructor() ERC721("C_NFT_721", "CN") {}
 
-    function mint(address to, string memory workId) public virtual onlyOwner {
+    function mint(
+        address to,
+        string memory workId,
+        string memory ipfsHash,
+        string memory s3Key
+    ) public virtual onlyOwner {
         require(_name2token[workId] == 0, "already mint");
 
         uint256 tokenId = _localTokenId;
 
         _name2token[workId] = tokenId;
         _token2name[tokenId] = workId;
+        _token2ipfsHash[tokenId] = ipfsHash;
+        _token2s3Key[tokenId] = s3Key;
+
         _mint(to, tokenId);
 
         _localTokenId += 1;
     }
 
-    function ownerAddressOf(string memory workId)
+    function tokenURI(uint256 tokenId)
         public
         view
         virtual
-        returns (address)
+        override
+        returns (string memory)
     {
-        uint256 tokenId = _name2token[workId];
+        string memory ipfsHash = _token2ipfsHash[tokenId];
+        string memory s3Key = _token2s3Key[tokenId];
 
-        if (!_exists(tokenId)) {
-            return address(0);
+        if (!isEmptyString(ipfsHash)) {
+            return
+                string(
+                    abi.encodePacked(
+                        "https://ipfs.moralis.io:2053/ipfs/",
+                        ipfsHash
+                    )
+                );
         }
 
-        return ownerOf(tokenId);
+        if (!isEmptyString(s3Key)) {
+            return
+                string(
+                    abi.encodePacked(
+                        "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/",
+                        s3Key
+                    )
+                );
+        }
+
+        revert("unknown token");
+    }
+
+    function isEmptyString(string memory value) private pure returns (bool) {
+        bytes memory b = bytes(value);
+        return b.length == 0;
     }
 
     function isOwn(address addr, string memory workId)
@@ -53,27 +87,19 @@ contract Canvas721 is Context, ERC721Enumerable, Ownable {
         return addr == ownerOf(tokenId);
     }
 
-    function currentSupply() public view virtual returns (uint256) {
-        return _localTokenId - 1;
-    }
-
-    function tokenURI(uint256 tokenId)
+    function ownerAddressOf(string memory workId)
         public
         view
         virtual
-        override
-        returns (string memory)
+        returns (address)
     {
-        string memory workId = _token2name[tokenId];
+        uint256 tokenId = _name2token[workId];
 
-        return
-            string(
-                abi.encodePacked(
-                    "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/721_asset/",
-                    workId,
-                    ".metadata.json"
-                )
-            );
+        if (!_exists(tokenId)) {
+            return address(0);
+        }
+
+        return ownerOf(tokenId);
     }
 
     function tokenIdOf(string memory workId)

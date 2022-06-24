@@ -100,7 +100,7 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
 
             let admin_nft_app = application::nft::Application::new(data.executor_id.clone()).await;
             let res = admin_nft_app
-                .mint_erc721(data.work_id.clone())
+                .mint_erc721(data.work_id.clone(), data.ipfs_hash, data.s3_key)
                 .await
                 .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)));
 
@@ -136,7 +136,12 @@ async fn exec(event: Value, _: Context) -> Result<(), Error> {
 
             let admin_nft_app = application::nft::Application::new(data.executor_id.clone()).await;
             let res = admin_nft_app
-                .mint_erc1155(data.work_id.clone(), data.amount.clone())
+                .mint_erc1155(
+                    data.work_id.clone(),
+                    data.amount.clone(),
+                    data.ipfs_hash,
+                    data.s3_key,
+                )
                 .await
                 .map_err(|e| simple_error::SimpleError::new(format!("error: {:?}", e)));
 

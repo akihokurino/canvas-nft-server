@@ -6,6 +6,7 @@ use crate::graph::Context;
 use crate::graph::FieldErrorWithCode;
 use app::AppError;
 use juniper::FieldResult;
+use std::{thread, time};
 
 pub struct QueryRoot;
 
@@ -96,6 +97,9 @@ impl QueryRoot {
             .is_own_erc721(work_id.clone())
             .await
             .map_err(FieldErrorWithCode::from)?;
+
+        // OpenSeaのレートリミット対応
+        thread::sleep(time::Duration::from_millis(1000));
 
         let is_own_erc1155 = context
             .nft_app

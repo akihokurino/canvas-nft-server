@@ -445,6 +445,16 @@
         "internalType": "string",
         "name": "workId",
         "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ipfsHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "s3Key",
+        "type": "string"
       }
     ],
     "name": "mint",
@@ -455,17 +465,17 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "workId",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
-    "name": "ownerAddressOf",
+    "name": "tokenURI",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "string",
         "name": "",
-        "type": "address"
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -498,33 +508,19 @@
     "constant": true
   },
   {
-    "inputs": [],
-    "name": "currentSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function",
-    "constant": true
-  },
-  {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "workId",
+        "type": "string"
       }
     ],
-    "name": "tokenURI",
+    "name": "ownerAddressOf",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "address",
         "name": "",
-        "type": "string"
+        "type": "address"
       }
     ],
     "stateMutability": "view",

@@ -5,7 +5,7 @@ contract("Canvas721", (accounts) => {
   it("canvas methods test", async () => {
     const contract = await Canvas721.deployed();
 
-    await contract.mint(accounts[0], "A");
+    await contract.mint(accounts[0], "A", "", "721_asset/A.metadata.json");
     const tokenURI1 = await contract.tokenURI(1);
     assert.equal(
       tokenURI1,
@@ -13,16 +13,21 @@ contract("Canvas721", (accounts) => {
       "error"
     );
 
-    await contract.mint(accounts[0], "B");
+    await contract.mint(
+      accounts[0],
+      "B",
+      "Qme4nCCQgRSeiprzEAmKuVxEjmmAfHhwhWJw4xe1pG7mhD",
+      ""
+    );
     const tokenURI2 = await contract.tokenURI(2);
     assert.equal(
       tokenURI2,
-      "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/721_asset/B.metadata.json",
+      "https://ipfs.moralis.io:2053/ipfs/Qme4nCCQgRSeiprzEAmKuVxEjmmAfHhwhWJw4xe1pG7mhD",
       "error"
     );
 
     try {
-      await contract.mint(accounts[1], "B");
+      await contract.mint(accounts[1], "B", "", "");
       throw new Error();
     } catch (error) {
       assert.equal(error.reason, "already mint", "error");
@@ -47,9 +52,6 @@ contract("Canvas721", (accounts) => {
     const isOwn2 = await contract.isOwn(accounts[1], "A");
     assert.equal(isOwn2, false, "error");
 
-    const supply = await contract.currentSupply();
-    assert.equal(supply, 2, "error");
-
     const tokenId1 = await contract.tokenIdOf("A");
     assert.equal(tokenId1, 1, "error");
 
@@ -70,7 +72,7 @@ contract("Canvas1155", (accounts) => {
   it("canvas methods test", async () => {
     const contract = await Canvas1155.deployed();
 
-    await contract.mint(accounts[0], "A", 10);
+    await contract.mint(accounts[0], "A", 10, "", "1155_asset/A.metadata.json");
     const tokenURI1 = await contract.uri(1);
     assert.equal(
       tokenURI1,
@@ -78,34 +80,26 @@ contract("Canvas1155", (accounts) => {
       "error"
     );
 
-    await contract.mint(accounts[0], "B", 10);
+    await contract.mint(
+      accounts[0],
+      "B",
+      10,
+      "Qme4nCCQgRSeiprzEAmKuVxEjmmAfHhwhWJw4xe1pG7mhD",
+      ""
+    );
     const tokenURI2 = await contract.uri(2);
     assert.equal(
       tokenURI2,
-      "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/1155_asset/B.metadata.json",
+      "https://ipfs.moralis.io:2053/ipfs/Qme4nCCQgRSeiprzEAmKuVxEjmmAfHhwhWJw4xe1pG7mhD",
       "error"
     );
 
     try {
-      await contract.mint(accounts[1], "B", 10);
+      await contract.mint(accounts[1], "B", 10, "", "");
       throw new Error();
     } catch (error) {
       assert.equal(error.reason, "already mint", "error");
     }
-
-    await contract.mintBatch(accounts[0], ["AA", "BB"], [10, 20]);
-    const tokenURI3 = await contract.uri(3);
-    assert.equal(
-      tokenURI3,
-      "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/1155_asset/AA.metadata.json",
-      "error"
-    );
-    const tokenURI4 = await contract.uri(4);
-    assert.equal(
-      tokenURI4,
-      "https://canvas-nft-userdata.s3.ap-northeast-1.amazonaws.com/1155_asset/BB.metadata.json",
-      "error"
-    );
 
     const tokenId1 = await contract.tokenIdOf("A");
     assert.equal(tokenId1, 1, "error");
@@ -113,20 +107,12 @@ contract("Canvas1155", (accounts) => {
     const tokenId2 = await contract.tokenIdOf("B");
     assert.equal(tokenId2, 2, "error");
 
-    const tokenId3 = await contract.tokenIdOf("AA");
-    assert.equal(tokenId3, 3, "error");
-
-    const tokenId4 = await contract.tokenIdOf("BB");
-    assert.equal(tokenId4, 4, "error");
-
-    const tokenId5 = await contract.tokenIdOf("C");
-    assert.equal(tokenId5, 0, "error");
+    const tokenId3 = await contract.tokenIdOf("C");
+    assert.equal(tokenId3, 0, "error");
 
     const names = await contract.usedTokenNames();
     assert.equal(names[0], "A", "error");
     assert.equal(names[1], "B", "error");
-    assert.equal(names[2], "AA", "error");
-    assert.equal(names[3], "BB", "error");
-    assert.equal(names.length, 4, "error");
+    assert.equal(names.length, 2, "error");
   });
 });
