@@ -42,6 +42,7 @@ impl Verifier {
             }
             Some(v) => v,
         };
+
         let token = jsonwebtoken::decode::<Claims>(
             token,
             &DecodingKey::from_rsa_components(&jwk.n, &jwk.e)
