@@ -9,7 +9,7 @@ use crate::{
     ERC721_ASSET_PATH_PREFIX,
 };
 use bytes::Bytes;
-use std::env;
+use std::{env, thread, time};
 
 pub struct Application {
     #[allow(dead_code)]
@@ -241,6 +241,10 @@ impl Application {
             .ethereum_cli
             .get_erc721_token_id_of(work_id.clone())
             .await?;
+
+        // OpenSeaのレートリミット対応
+        thread::sleep(time::Duration::from_millis(500));
+
         let asset = self
             .open_sea_cli
             .get_asset(open_sea::api::get_asset::Input {
@@ -272,6 +276,10 @@ impl Application {
             .ethereum_cli
             .get_erc1155_token_id_of(work_id.clone())
             .await?;
+
+        // OpenSeaのレートリミット対応
+        thread::sleep(time::Duration::from_millis(500));
+
         let asset = self
             .open_sea_cli
             .get_asset(open_sea::api::get_asset::Input {
@@ -298,7 +306,7 @@ impl Application {
 
     pub async fn sync_asset(&self) -> AppResult<()> {
         let used_erc721_ids = self.ethereum_cli.get_erc721_used_names().await?;
-        for work_id in used_erc721_ids {
+        for work_id in &used_erc721_ids {
             println!("sync work for erc721: {}", work_id);
 
             let work = self.work_dao.get(work_id.clone()).await;
@@ -319,7 +327,7 @@ impl Application {
         }
 
         let used_erc1155_ids = self.ethereum_cli.get_erc1155_used_names().await?;
-        for work_id in used_erc1155_ids {
+        for work_id in &used_erc1155_ids {
             println!("sync work for erc1155: {}", work_id);
 
             let work = self.work_dao.get(work_id.clone()).await;
@@ -337,6 +345,34 @@ impl Application {
                 work.status = WorkStatus::PublishNFT;
                 self.work_dao.put(&work).await?;
             }
+        }
+
+        println!("delete asset if need");
+
+        let all_asset721 = self.asset721_dao.get_all().await?;
+        for asset in all_asset721.iter().filter(|asset| {
+            used_erc721_ids
+                .clone()
+                .into_iter()
+                .find(|id| id.to_string() == asset.work_id)
+                .is_none()
+        }) {
+            let id = asset.to_owned().work_id;
+            println!("delete erc721 asset: {}", id.clone());
+            self.asset721_dao.delete(id).await?;
+        }
+
+        let all_asset1155 = self.asset1155_dao.get_all().await?;
+        for asset in all_asset1155.iter().filter(|asset| {
+            used_erc1155_ids
+                .clone()
+                .into_iter()
+                .find(|id| id.to_string() == asset.work_id)
+                .is_none()
+        }) {
+            let id = asset.to_owned().work_id;
+            println!("delete erc1155 asset: {}", id.clone());
+            self.asset1155_dao.delete(id).await?;
         }
 
         Ok(())

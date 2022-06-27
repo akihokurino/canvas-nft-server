@@ -100,6 +100,22 @@ impl asset::Asset1155 {
 }
 
 impl Dao<asset::Asset1155> {
+    pub async fn get_all(&self) -> AppResult<Vec<asset::Asset1155>> {
+        let res = self
+            .cli
+            .scan()
+            .table_name(self.table_name_provider.with(TABLE_NAME))
+            .send()
+            .await?;
+
+        let mut entities: Vec<asset::Asset1155> = vec![];
+        for item in res.items.unwrap_or_default() {
+            entities.push(asset::Asset1155::deserialize(item).unwrap())
+        }
+
+        Ok(entities)
+    }
+
     pub async fn get(&self, work_id: String) -> AppResult<asset::Asset1155> {
         let res = self
             .cli
@@ -120,6 +136,16 @@ impl Dao<asset::Asset1155> {
 
     pub async fn put(&self, item: &asset::Asset1155) -> AppResult<()> {
         item.serialize_and_save(&self.cli, self.table_name_provider.with(TABLE_NAME))
+            .await?;
+        Ok(())
+    }
+
+    pub async fn delete(&self, id: String) -> AppResult<()> {
+        self.cli
+            .delete_item()
+            .table_name(self.table_name_provider.with(TABLE_NAME))
+            .key(KEY_WORK_ID, asset::Asset1155::primary_key(id))
+            .send()
             .await?;
         Ok(())
     }
